@@ -13,9 +13,84 @@ const api = require('../../utils/api')
 const i18n = require('../../utils/i18n')
 const fmt = require('../../utils/format')
 const present = require('../../utils/present')
+const rules = require('../../utils/rules')
 
 /** Status → the tag class that carries its colour. See bill.wxss. */
 const SHARE_CLASS = { UNPAID: 'unpaid', PAID: 'paid', WAIVED: 'waived' }
+
+/**
+ * The split box's lines, from either source of the same numbers.
+ *
+ * `bill.get` returns the preview under its own field names (`base_minor`,
+ * `remainder_minor`) and `rules.computeShares` returns it under the rule's (`base`,
+ * `remainder`), so this takes the figures rather than either shape. Both paths then
+ * render through one function, which is the whole point: what the organizer reads
+ * while typing is character-for-character what they read after publishing.
+ */
+function splitLines(f, cur) {
+  return {
+    payer_count: f.payerCount,
+    // Whether there is a total to divide at all, which is what decides between the
+    // figures and the "type one in" hint. Derived here so the template asks one
+    // question instead of reasoning about the input box and the bill status.
+    has_total: f.total > 0,
+    /**
+     * A court fee rarely divides evenly in whole cents, so somebody pays one more than
+     * somebody else — that is what keeps Σ shares === total exactly (§9.2). The
+     * headline used to show both figures as a range, which gave a one-cent difference
+     * the same weight as the amount itself. It now shows the higher one: a number
+     * nobody is asked to beat, and what anyone reads it as anyway. The rows below still
+     * carry each person's exact share, to the cent.
+     */
+    per_share_text: i18n.t('perShare', {
+      amount: fmt.money(f.base + (f.remainder ? 1 : 0), cur),
+    }),
+    units_line: i18n.t('unitsLine', { units: f.units, n: f.payerCount }),
+    remainder_note: f.remainder ? i18n.t('remainderNote', { n: f.remainder }) : '',
+    // Only worth a line when the venue actually charges for guests. §3.7
+    surcharge_line: f.surchargeTotal
+      ? i18n.t('guestSurchargeLine', {
+          n: f.guestUnits,
+          amount: fmt.money(f.surchargeTotal, cur),
+        })
+      : '',
+  }
+}
+
+/**
+ * The total the split should be shown for, given what is in the box.
+ *
+ * An empty box is not zero: `publish` reads it as "leave the saved total alone", so the
+ * honest preview of an empty box is the total already recorded. Reading it as zero
+ * showed every row as 0.00 under a hint asking for a total that was in fact already
+ * there — the two halves of the card disagreeing about the same bill.
+ */
+function effectiveTotal(input, savedMinor, cur) {
+  if (String(input) === '') return Math.max(0, savedMinor || 0)
+  return fmt.toMinor(input, cur)
+}
+
+/**
+ * The roster the bill divides across, in the shape `rules.computeShares` reads.
+ *
+ * `bill.get` returns display rows rather than raw signups, and the rule needs three
+ * things off them: who still holds a seat (`off_roster` — a row can be somebody who
+ * left after publication and still owes), how many units each party holds, and the
+ * signup order, because the odd cents are handed out along it. `guestCountOf` measures
+ * a `guests` array rather than reading a count, hence the empty array of the right
+ * length; and the rows arrive already sorted by `joined_at`, so the index is that
+ * order exactly — which is all `payersFor` uses `joined_at` for.
+ */
+function payerSignups(rows) {
+  return (rows || [])
+    .filter((r) => !r.off_roster)
+    .map((r, i) => ({
+      openid: r.openid,
+      state: 'ROSTER',
+      joined_at: i,
+      guests: new Array(r.guest_count || 0).fill(null),
+    }))
+}
 
 Page({
   data: {
@@ -23,6 +98,12 @@ Page({
     eventId: '',
     v: null,
     rows: [],
+    /**
+     * The split box, kept out of `v` because it is the one thing on this page that
+     * changes without a server round-trip: it is recomputed from the total as the
+     * organizer types. See previewSplit.
+     */
+    split: null,
     totalCost: '',
     paymentNote: '',
     published: false,
@@ -56,18 +137,37 @@ Page({
         const published = !!bill && bill.status !== 'DRAFT'
         const voided = !!bill && bill.status === 'VOID'
 
+        // Don't clobber an edit in progress.
+        const totalCost = this.data.editingTotal
+          ? this.data.totalCost
+          : fmt.toMajorInput(bill && bill.total_minor, cur)
+
         this.setData({
           v: this.decorate(raw, t, cur, published, voided),
           rows: this.decorateRows(raw, t, cur, published),
           published,
-          // Don't clobber an edit in progress.
-          totalCost: this.data.editingTotal
-            ? this.data.totalCost
-            : fmt.toMajorInput(bill && bill.total_minor, cur),
+          totalCost,
           paymentNote: this.data.editingTotal
             ? this.data.paymentNote
             : (bill && bill.payment_note) || '',
+          split: splitLines(
+            {
+              total: (bill && bill.total_minor) || 0,
+              base: raw.preview.base_minor,
+              remainder: raw.preview.remainder_minor,
+              units: raw.preview.units,
+              payerCount: raw.preview.payer_count,
+              guestUnits: raw.preview.guest_units,
+              surchargeTotal: raw.preview.surcharge_total,
+            },
+            cur
+          ),
         })
+
+        // A reload during an edit — a pull-to-refresh, or the return from marking
+        // somebody paid — must not put the saved total's split back under a figure the
+        // organizer is still typing.
+        if (this.data.editingTotal) this.previewSplit(totalCost)
       })
       .catch((err) => {
         wx.showToast({ title: i18n.errText(err), icon: 'none' })
@@ -77,7 +177,6 @@ Page({
 
   decorate(raw, t, cur, published, voided) {
     const bill = raw.bill
-    const p = raw.preview
     const totals = raw.totals
     const mine = raw.my_share
 
@@ -91,29 +190,9 @@ Page({
       status_class: bill ? String(bill.status).toLowerCase() : '',
 
       // --- the split, as it would be published ------------------------------
+      // The figures themselves are in `split`, not here: they answer to the input box
+      // rather than to the server. See splitLines.
       total_text: fmt.money(bill ? bill.total_minor : 0, cur),
-      units_line: i18n.t('unitsLine', { units: p.units, n: p.payer_count }),
-      /**
-       * A court fee rarely divides evenly in whole cents, so somebody pays one more
-       * than somebody else — that is what keeps Σ shares === total exactly (§9.2).
-       * The headline used to show both figures as a range, which gave a one-cent
-       * difference the same weight as the amount itself. It now shows the higher one:
-       * a number nobody is asked to beat, and what anyone reads it as anyway. The
-       * rows below still carry each person's exact share, to the cent.
-       */
-      per_share_text: i18n.t('perShare', {
-        amount: fmt.money(p.base_minor + (p.remainder_minor ? 1 : 0), cur),
-      }),
-      remainder_note: p.remainder_minor
-        ? i18n.t('remainderNote', { n: p.remainder_minor })
-        : '',
-      // Only worth a line when the venue actually charges for guests. §3.7
-      surcharge_line: p.surcharge_total
-        ? i18n.t('guestSurchargeLine', {
-            n: p.guest_units,
-            amount: fmt.money(p.surcharge_total, cur),
-          })
-        : '',
       publish_hint: i18n.t('publishHint', { hours: raw.grace_hours }),
       // The list is the same rows before and after publication; only its heading and
       // its buttons change.
@@ -165,6 +244,66 @@ Page({
   // --- the total and the note -----------------------------------------------
   onTotalCost(e) {
     this.setData({ totalCost: e.detail.value, editingTotal: true })
+    this.previewSplit(e.detail.value)
+  },
+
+  /**
+   * Re-split the typed total on the spot. §9.2
+   *
+   * The number an organizer is actually trying to land on is the per-person one — they
+   * type a total to find out what it does to everybody's share, and before this the
+   * answer arrived only after publishing, which is exactly the wrong moment to discover
+   * it. So the split follows the keystrokes.
+   *
+   * It is the same `rules.computeShares` the server runs, given a total that hasn't been
+   * saved yet: the split is not reimplemented here, only driven early. That matters more
+   * than it looks — a second, near-enough division on the client would be a rule in two
+   * places, and it would disagree over exactly the cases the real one is careful about
+   * (guest surcharges peeled off first, odd cents handed out in signup order).
+   *
+   * The row amounts move with it while the bill is still a draft, since those are the
+   * same preview per person. Once published they are recorded shares, not a preview, and
+   * a revision only lands when it is published — so they stay put and the box above says
+   * what a revision would do.
+   */
+  previewSplit(input) {
+    const v = this.data.v
+    if (!v || !v.is_manager) return
+
+    const cur = v.event.currency
+    const total = effectiveTotal(input, v.bill && v.bill.total_minor, cur)
+    const preview = rules.computeShares({
+      total_minor: total,
+      signups: payerSignups(v.rows),
+      guest_surcharge_minor: v.surcharge_minor,
+    })
+
+    const patch = {
+      split: splitLines(
+        {
+          total,
+          base: preview.base,
+          remainder: preview.remainder,
+          units: preview.units,
+          payerCount: preview.payer_count,
+          guestUnits: preview.guest_units,
+          surchargeTotal: preview.surcharge_total,
+        },
+        cur
+      ),
+    }
+
+    if (!this.data.published) {
+      const byOpenid = {}
+      preview.rows.forEach((r) => {
+        byOpenid[r.openid] = r.share_minor
+      })
+      patch.rows = this.data.rows.map((r) =>
+        Object.assign({}, r, { amount_text: fmt.money(byOpenid[r.openid] || 0, cur) })
+      )
+    }
+
+    this.setData(patch)
   },
 
   onPaymentNote(e) {
@@ -289,3 +428,13 @@ Page({
     wx.navigateTo({ url: `/pages/manage/manage?id=${this.data.eventId}` })
   },
 })
+
+/**
+ * For tests/bills.test.js, which pins the live preview against what publishing
+ * actually bills. The framework registers the page through Page() above and ignores
+ * this; a page file is still a CommonJS module.
+ *
+ * `payerSignups` is the one piece of adapting between the server's row shape and the
+ * rule's, so it is the one piece that can silently drift from the split it previews.
+ */
+module.exports = { payerSignups, splitLines, effectiveTotal }

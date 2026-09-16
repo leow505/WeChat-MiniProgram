@@ -90,13 +90,21 @@
              what was booked, this page is where money is dealt with. §9.1 -->
         <view class="field-hint">{{t.totalPaidHint}}</view>
 
-        <view wx:if="{{v.preview.payer_count}}" class="split-box">
-          <text class="split-main">{{v.per_share_text}}</text>
-          <text class="split-sub">{{v.units_line}}</text>
-          <text wx:if="{{v.remainder_note}}" class="split-sub">{{v.remainder_note}}</text>
-          <text wx:if="{{v.surcharge_line}}" class="split-sub">{{v.surcharge_line}}</text>
+        <!--
+          Answers the box above as it is typed, rather than after publishing: the
+          per-person figure is what the organizer is looking for, and the total is only
+          how they ask for it. Same numbers, same wording, before and after — see
+          splitLines in bill.js.
+        -->
+        <view wx:if="{{split.payer_count && split.has_total}}" class="split-box">
+          <text class="split-main">{{split.per_share_text}}</text>
+          <text class="split-sub">{{split.units_line}}</text>
+          <text wx:if="{{split.remainder_note}}" class="split-sub">{{split.remainder_note}}</text>
+          <text wx:if="{{split.surcharge_line}}" class="split-sub">{{split.surcharge_line}}</text>
         </view>
-        <view wx:elif="{{!totalCost}}" class="field-hint">{{t.noTotalYet}}</view>
+        <!-- has_total, not an empty box: clearing the box leaves the saved total in
+             place (see effectiveTotal), so the two are not the same question. -->
+        <view wx:elif="{{!split.has_total}}" class="field-hint">{{t.noTotalYet}}</view>
 
         <view class="field">
           <text class="field-label">{{t.paymentNote}}</text>

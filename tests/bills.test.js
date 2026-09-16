@@ -29,6 +29,13 @@ const UTILS = path.join(__dirname, '../miniprogram/utils')
 const mock = require(path.join(UTILS, 'mock.js'))
 const rules = require(path.join(UTILS, 'rules.js'))
 
+/**
+ * The bill page, for the live split preview it computes while the total is typed.
+ * Registering a page is the framework's job, so stub it the way wx is stubbed above.
+ */
+global.Page = () => {}
+const billPage = require(path.join(__dirname, '../miniprogram/pages/bill/bill.js'))
+
 let pass = 0
 let fail = 0
 
@@ -116,6 +123,60 @@ function refuses(label, code, promise) {
   await refuses('cannot mark paid before publishing', 'BILL_NOT_PUBLISHED',
     call('bill.markPaid', { eventId: 'e_played', targetOpenid: 'u_lin', paid: true }))
 
+  /*
+   * --- the figure shown while typing is the figure that gets billed -----------
+   *
+   * The bill page splits the typed total on the spot, so the organizer sees the
+   * per-person number before publishing rather than after. That preview is worth
+   * exactly as much as its agreement with what publication then charges: a client-side
+   * split that is merely close would show one number and bill another, and it would
+   * differ over precisely the cases the real rule is careful about — a guest surcharge
+   * peeled off the total first, and odd cents handed out in signup order.
+   *
+   * So it drives the same rules.computeShares. What can still drift is the adapter
+   * between the server's row shape and the rule's, which is what this pins.
+   * e_played is the right fixture: six payers, seven units, a party of two, and a
+   * venue that charges 500 a guest.
+   */
+  const liveSignups = billPage.payerSignups(v.rows)
+  is('the preview splits across the roster, not the row list', liveSignups.length, 6)
+  is('and keeps the party its two units', liveSignups.filter((s) => s.guests.length === 1).length, 1)
+
+  const live = (typed) =>
+    rules.computeShares({
+      total_minor: fmt.toMinor(typed, 'CAD'),
+      signups: billPage.payerSignups(v.rows),
+      guest_surcharge_minor: v.surcharge_minor,
+    })
+
+  // Against the server's own preview of the same total, person by person.
+  const live9600 = live('96')
+  is(
+    'every live amount matches the server preview of the same total',
+    live9600.rows.map((r) => [r.openid, r.share_minor]),
+    v.rows.filter((r) => !r.off_roster).map((r) => [r.openid, r.preview_minor])
+  )
+  is('and the headline figure agrees', live9600.base, v.preview.base_minor)
+  is('down to the odd cents', live9600.remainder, v.preview.remainder_minor)
+  is('and the surcharge it peeled off first', live9600.surcharge_total, v.preview.surcharge_total)
+
+  // Awkward totals keep conserving, so no keystroke shows money that isn't there.
+  ;['96.75', '13.45', '0.01', '85.71', '100'].forEach((typed) => {
+    const out = live(typed)
+    is(`typing ${typed} allocates exactly`, out.allocated_minor, fmt.toMinor(typed, 'CAD'))
+  })
+  /*
+   * An empty box is not zero. `publish` reads it as "leave the saved total alone", so
+   * the preview has to read it the same way — showing every row as 0.00 under a hint
+   * asking for a total that was already recorded had the two halves of the card
+   * disagreeing about the same bill.
+   */
+  is('clearing the box previews the total already saved', billPage.effectiveTotal('', 9600, 'CAD'), 9600)
+  is('with nothing saved either, there is nothing to split', billPage.effectiveTotal('', 0, 'CAD'), 0)
+  is('and a typed total wins over the saved one', billPage.effectiveTotal('50', 9600, 'CAD'), 5000)
+  is('a half-typed decimal is still a number', billPage.effectiveTotal('96.', 9600, 'CAD'), 9600)
+  is('so is a bare decimal point', billPage.effectiveTotal('.', 9600, 'CAD'), 0)
+
   let p = await call('bill.publish', { eventId: 'e_played', payment_note: 'e-transfer 给 林昊' })
   is('publishes 6 shares', p.share_count, 6)
   is('publication conserves the total', p.allocated_minor, 9600)
@@ -126,6 +187,13 @@ function refuses(label, code, promise) {
   is('due 12h after publication', v.bill.due_at - v.bill.billed_at, 12 * rules.HOUR)
   is('everything starts unpaid', v.totals.unpaid_minor, 9600)
   is('payment note stored', v.bill.payment_note, 'e-transfer 给 林昊')
+  // Closing the loop the organizer actually cares about: what they read while typing
+  // 96 is what each person is now on the hook for, to the cent.
+  is(
+    'publication bills what the live preview showed',
+    v.rows.map((r) => [r.openid, r.share_minor]),
+    live9600.rows.map((r) => [r.openid, r.share_minor])
+  )
 
   // --- tick payments off ----------------------------------------------------
   await call('bill.markPaid', { eventId: 'e_played', targetOpenid: 'u_lin', paid: true })
@@ -141,6 +209,20 @@ function refuses(label, code, promise) {
   await call('event.removeSignup', { eventId: 'e_played', targetOpenid: 'u_sun' })
   const before = await call('bill.get', { eventId: 'e_played' })
   is('someone off the roster drops out of the preview', before.preview.payer_count, 5)
+  /*
+   * And out of the live one. This is the row the list keeps on screen but the split has
+   * to leave out: they gave up the seat after publication and still owe the old share,
+   * so money doesn't vanish from the organizer's screen (see below) — but counting them
+   * as a payer would quietly bill a seventh unit and dilute everybody's share, and it is
+   * the one mistake in this adapter that nothing else on the page would reveal.
+   */
+  is('a row that still owes but holds no seat is not a payer', billPage.payerSignups(before.rows).length, 5)
+  is(
+    'and it is specifically the one who left',
+    billPage.payerSignups(before.rows).some((s) => s.openid === 'u_sun'),
+    false
+  )
+  is('the row is still on the screen, though', before.rows.some((r) => r.openid === 'u_sun'), true)
 
   p = await call('bill.publish', { eventId: 'e_played', total_minor: 9000 })
   is('a republish is flagged as a revision', p.revised, true)
