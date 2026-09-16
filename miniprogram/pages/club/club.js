@@ -22,6 +22,9 @@ Page({
     venueForm: { name: '', address: '', membership_required: false, max_courts_per_membership: 0 },
     jpOptions: [],
     mpOptions: [],
+    // No primary venue means no card to ask for, so the demanding options are shown
+    // but not selectable until one exists. §3.8
+    mpLocked: false,
     /**
      * Money settings. §10.3, §9.3
      *
@@ -78,6 +81,7 @@ Page({
           }),
           mName: d.my_membership ? d.my_membership.membership_name : '',
           mNo: d.my_membership ? d.my_membership.membership_no : '',
+          mpLocked: !club.primary_venue_id,
           // A club set to something the picker doesn't list still opens; it just lands
           // on the first entry until an admin picks again.
           currencyIdx: Math.max(0, fmt.CURRENCIES.indexOf(club.currency)),
@@ -272,7 +276,14 @@ Page({
   },
 
   setMembershipPolicy(e) {
-    this.patch({ membership_policy: e.currentTarget.dataset.value })
+    const value = e.currentTarget.dataset.value
+    // Asking for a card the club has no venue to issue would leave nobody able to
+    // join at all, so the demanding options wait for a primary venue. §3.8
+    if (this.data.mpLocked && value !== 'NOT_REQUIRED') {
+      wx.showToast({ title: this.data.t.membershipNeedsVenue, icon: 'none' })
+      return
+    }
+    this.patch({ membership_policy: value })
   },
 
   rotateCode() {

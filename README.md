@@ -57,7 +57,7 @@ offline. It is not a stub of a few endpoints.
 node tests/rules.test.js       # 280 assertions, against both copies of the pure logic
 node tests/bills.test.js       #  90 assertions, the settlement flow and money maths
 node tests/organizer.test.js   #  50 assertions, a live session's rules and club money
-node tests/i18n.test.js        # 394 checks, every label key exists and is rendered
+node tests/i18n.test.js        # 397 checks, every label key exists and is rendered
 ```
 
 No framework, no install. What each one protects:
@@ -79,7 +79,7 @@ The API and web client have their own suites, which need Node 22 and PostgreSQL:
 ```bash
 cd platform && npm install && npm run db:up
 npm test                    # 136 tests, server, against a real database
-npm --workspace web test    #  51 tests, web client: helpers, invite page, labels, contrast
+npm --workspace web test    #  57 tests, web client: helpers, invite page, labels, contrast
 npm run typecheck && npm run build
 ```
 

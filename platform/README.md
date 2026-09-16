@@ -16,7 +16,7 @@ platform/
   server/          Hono + PostgreSQL. The action API, identity, the invite page.
   web/             Vue 3 + Vite. Invite links, player dashboard, organizer tools.
   docker-compose.yml   PostgreSQL 16 for local development
-  .env.example     copy to .env
+  .env.example     copy to server/.env
 ```
 
 ## The important design decision
@@ -58,7 +58,7 @@ cd platform
 npm install
 npm run db:up            # PostgreSQL 16 on 5432
 npm run db:test-create   # the database the server suites truncate
-cp .env.example .env      # then edit if you like
+cp .env.example server/.env   # where the server scripts read it from
 
 npm run migrate
 npm run seed             # demo club, venue and five sessions
@@ -97,7 +97,7 @@ demo organizer.
 npm run verify           # tests + typecheck + build + lint. The bar for a change.
 
 npm run test:server      # 136 — against a real PostgreSQL
-npm run test:web         #  51 — helpers, invite page in jsdom, labels, contrast
+npm run test:web         #  57 — helpers, invite page in jsdom, labels, contrast
 ```
 
 `verify` does **not** cover the four suites at the repo root, which are the only
@@ -108,7 +108,7 @@ cd ..
 node tests/rules.test.js       # 280  pure logic, against BOTH copies
 node tests/bills.test.js       #  90  settlement flow and money maths
 node tests/organizer.test.js   #  50  a live session's rules and club money
-node tests/i18n.test.js        # 394  every label exists, and is rendered
+node tests/i18n.test.js        # 397  every label exists, and is rendered
 ```
 
 Server tests need a database and will truncate it. They default to

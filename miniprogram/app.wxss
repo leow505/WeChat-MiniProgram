@@ -399,6 +399,13 @@ page {
   color: #5457d6;
   font-weight: 600;
 }
+/* An option that exists but cannot be picked yet, because something else has to be
+   set up first. Shown rather than hidden: an option that vanishes reads as a missing
+   feature, and the note above says what unlocks it. Tapping it explains, so it stays
+   legible rather than dropping to a disabled grey. */
+.seg-item.is-disabled {
+  color: #a8a8b3;
+}
 
 /* session card (templates/session-card.wxml) ------------------------------ */
 .scard {

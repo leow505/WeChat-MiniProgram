@@ -18,7 +18,7 @@ import { call } from '@/api/client'
 import LoadingState from '@/components/LoadingState.vue'
 import fmt from '@shared/format'
 import { t } from '@/shared/i18n'
-import { initial, whenText } from '@/shared/present'
+import { initial, perPersonMinor, whenText } from '@/shared/present'
 import { toast } from '@/shared/toast'
 import { session } from '@/stores/session'
 
@@ -40,6 +40,20 @@ const money = (minor: number) => fmt.money(minor, currency.value)
 /** What publishing the amount currently typed would charge each person. */
 const previewTotalMinor = computed(() =>
   totalInput.value ? fmt.toMinor(totalInput.value, currency.value) : 0
+)
+
+/**
+ * The per-person figure beside the total field. Computed from what is typed rather
+ * than read off the payload: the server's preview reflects the total already saved,
+ * so reading it made this tile lag a keystroke behind — and it was reading
+ * `per_unit_minor`, a field the API has never sent, so it showed 0.00 always.
+ */
+const perPersonMinorPreview = computed(() =>
+  perPersonMinor(
+    previewTotalMinor.value,
+    view.value?.preview.units ?? 0,
+    view.value?.preview.surcharge_total ?? 0
+  )
 )
 
 const outstanding = computed(() => view.value?.totals.unpaid_minor ?? 0)
@@ -246,7 +260,7 @@ onMounted(async () => {
           <div v-if="previewTotalMinor > 0" class="card card--quiet row--between">
             <span class="stat__label">{{ t.perShareLabel }}</span>
             <span class="numeric strong" style="font-size: var(--t-h2)">
-              {{ money(view.preview.per_unit_minor) }}
+              {{ money(perPersonMinorPreview) }}
             </span>
           </div>
 

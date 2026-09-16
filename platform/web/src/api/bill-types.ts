@@ -53,9 +53,16 @@ export interface BillView {
   } | null
   is_manager: boolean
   grace_hours: number
+  /**
+   * What publishing right now would produce. `base_minor` is the even share before
+   * the odd change is handed out — the field is named for the maths, not for what a
+   * screen shows, so use `perPersonMinor()` for the figure a person reads.
+   */
   preview: {
-    per_unit_minor: number
     units: number
+    guest_units: number
+    payer_count: number
+    base_minor: number
     remainder_minor: number
     surcharge_total: number
     allocated_minor: number

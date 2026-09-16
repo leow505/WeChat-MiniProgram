@@ -145,28 +145,58 @@
       <view class="btn" bindtap="submitVenue">{{t.addVenue}}</view>
     </view>
 
-    <!-- admin settings -->
+    <!--
+      Admin settings. Everything that decides who gets in lives in one card, in the
+      order somebody arrives: how admission works, what they have to bring with them,
+      and the code that got them here. Membership used to be a third card below the
+      money one, which put two halves of the same question on opposite ends of the
+      screen. Each block is label → explanation → control, the same shape the create
+      form and the manage screen use.
+    -->
     <block wx:if="{{d.is_admin}}">
       <view class="card">
-        <view class="section-title">{{t.joinPolicy}}</view>
-        <view class="seg seg-vertical">
-          <view
-            wx:for="{{jpOptions}}"
-            wx:key="value"
-            class="seg-item {{d.club.join_policy === item.value ? 'is-active' : ''}}"
-            data-value="{{item.value}}"
-            bindtap="setJoinPolicy"
-          >{{item.label}}</view>
+        <view class="section-title">{{t.joinTitle}}</view>
+
+        <view class="setting">
+          <text class="setting-label">{{t.joinPolicy}}</text>
+          <text class="setting-note">{{t.joinPolicyNote}}</text>
+          <view class="seg seg-vertical">
+            <view
+              wx:for="{{jpOptions}}"
+              wx:key="value"
+              class="seg-item {{d.club.join_policy === item.value ? 'is-active' : ''}}"
+              data-value="{{item.value}}"
+              bindtap="setJoinPolicy"
+            >{{item.label}}</view>
+          </view>
+        </view>
+
+        <view class="setting">
+          <text class="setting-label">{{t.membershipPolicy}}</text>
+          <!-- A club can only ask for a card its primary venue issues, so with no
+               venue set the two demanding options would make it unjoinable. -->
+          <text class="setting-note">{{mpLocked ? t.membershipNeedsVenue : t.membershipWhy}}</text>
+          <view class="seg seg-vertical">
+            <view
+              wx:for="{{mpOptions}}"
+              wx:key="value"
+              class="seg-item {{d.club.membership_policy === item.value ? 'is-active' : ''}} {{mpLocked && item.value !== 'NOT_REQUIRED' ? 'is-disabled' : ''}}"
+              data-value="{{item.value}}"
+              bindtap="setMembershipPolicy"
+            >{{item.label}}</view>
+          </view>
         </view>
 
         <!-- the code is how anyone finds this club at all, so it's always shown
              to admins rather than being tied to one policy. §3.10 -->
-        <view class="field">
-          <text class="field-label">{{t.inviteCode}}</text>
-          <text class="code" bindtap="copyCode">{{d.club.invite_code}}</text>
+        <view class="setting">
+          <view class="setting-head">
+            <text class="setting-label">{{t.inviteCode}}</text>
+            <text class="code" bindtap="copyCode">{{d.club.invite_code}}</text>
+          </view>
+          <text class="setting-note">{{t.inviteCodeWhy}}</text>
+          <view class="mini-btn ghost" bindtap="rotateCode">{{t.rotateCode}}</view>
         </view>
-        <view class="field-hint">{{t.inviteCodeWhy}}</view>
-        <view class="mini-btn ghost" bindtap="rotateCode">{{t.rotateCode}}</view>
       </view>
 
       <!--
@@ -175,34 +205,24 @@
       -->
       <view class="card">
         <view class="section-title">{{t.moneySettings}}</view>
-        <view class="field">
-          <text class="field-label">{{t.currency}}</text>
-          <picker mode="selector" range="{{currencies}}" value="{{currencyIdx}}" bindchange="onCurrency">
-            <view class="field-value">{{currencies[currencyIdx]}} ›</view>
-          </picker>
+        <view class="setting">
+          <view class="setting-head">
+            <text class="setting-label">{{t.currency}}</text>
+            <picker mode="selector" range="{{currencies}}" value="{{currencyIdx}}" bindchange="onCurrency">
+              <view class="field-value">{{currencies[currencyIdx]}} ›</view>
+            </picker>
+          </view>
+          <text class="setting-note">{{t.currencyWhy}}</text>
         </view>
-        <view class="field-hint">{{t.currencyWhy}}</view>
-        <view class="field">
-          <text class="field-label">{{t.graceHours}}</text>
-          <picker mode="selector" range="{{graceLabels}}" value="{{graceIdx}}" bindchange="onGrace">
-            <view class="field-value">{{graceLabels[graceIdx]}} ›</view>
-          </picker>
+        <view class="setting">
+          <view class="setting-head">
+            <text class="setting-label">{{t.graceHours}}</text>
+            <picker mode="selector" range="{{graceLabels}}" value="{{graceIdx}}" bindchange="onGrace">
+              <view class="field-value">{{graceLabels[graceIdx]}} ›</view>
+            </picker>
+          </view>
+          <text class="setting-note">{{t.graceHoursWhy}}</text>
         </view>
-        <view class="field-hint">{{t.graceHoursWhy}}</view>
-      </view>
-
-      <view class="card">
-        <view class="section-title">{{t.membershipPolicy}}</view>
-        <view class="seg seg-vertical">
-          <view
-            wx:for="{{mpOptions}}"
-            wx:key="value"
-            class="seg-item {{d.club.membership_policy === item.value ? 'is-active' : ''}}"
-            data-value="{{item.value}}"
-            bindtap="setMembershipPolicy"
-          >{{item.label}}</view>
-        </view>
-        <view class="field-hint">{{t.membershipWhy}}</view>
       </view>
     </block>
   </block>

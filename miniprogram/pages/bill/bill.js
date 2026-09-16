@@ -94,16 +94,16 @@ Page({
       total_text: fmt.money(bill ? bill.total_minor : 0, cur),
       units_line: i18n.t('unitsLine', { units: p.units, n: p.payer_count }),
       /**
-       * A court fee rarely divides evenly, so the headline says a range rather than a
-       * figure one person will actually pay a cent more than. The odd change goes to the
-       * earliest signups, which is what keeps Σ shares === total exactly (§9.2).
+       * A court fee rarely divides evenly in whole cents, so somebody pays one more
+       * than somebody else — that is what keeps Σ shares === total exactly (§9.2).
+       * The headline used to show both figures as a range, which gave a one-cent
+       * difference the same weight as the amount itself. It now shows the higher one:
+       * a number nobody is asked to beat, and what anyone reads it as anyway. The
+       * rows below still carry each person's exact share, to the cent.
        */
-      per_share_text: p.remainder_minor
-        ? i18n.t('perShareRange', {
-            low: fmt.money(p.base_minor, cur),
-            high: fmt.money(p.base_minor + 1, cur),
-          })
-        : i18n.t('perShare', { amount: fmt.money(p.base_minor, cur) }),
+      per_share_text: i18n.t('perShare', {
+        amount: fmt.money(p.base_minor + (p.remainder_minor ? 1 : 0), cur),
+      }),
       remainder_note: p.remainder_minor
         ? i18n.t('remainderNote', { n: p.remainder_minor })
         : '',

@@ -74,6 +74,30 @@ export function money(minor: number, currency?: string): string {
   return fmt.money(minor, currency)
 }
 
+/**
+ * The headline "what one person pays" above a split, in minor units.
+ *
+ * A court fee rarely divides evenly in whole cents, so the exact split hands the
+ * odd change to the earliest signups and everybody else pays one less — that is
+ * what keeps Σ shares === total (§9.2). The headline shows the higher of the two,
+ * matching the mini program: one figure nobody is asked to beat, rather than a
+ * range that gives a single cent the weight of the amount itself.
+ *
+ * The division itself is `rules.splitEvenly`, not a second implementation. Only the
+ * guest surcharge is peeled off here, because this figure is wanted for a total the
+ * organizer is still typing; the authoritative split is computed server-side when
+ * the bill is published. A surcharge larger than the whole total means the total
+ * does not include it, and it is ignored rather than billed out — the same fallback
+ * `computeShares` makes.
+ */
+export function perPersonMinor(totalMinor: number, units: number, surchargeTotal = 0): number {
+  if (!(units > 0)) return 0
+  const total = Math.max(0, Math.round(totalMinor))
+  const surcharge = surchargeTotal > total ? 0 : Math.max(0, Math.round(surchargeTotal))
+  const { base, remainder } = rules.splitEvenly(total - surcharge, units)
+  return base + (remainder ? 1 : 0)
+}
+
 /** The initial shown in an avatar circle. */
 export function initial(name: string): string {
   const trimmed = String(name ?? '').trim()

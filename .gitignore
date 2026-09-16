@@ -10,3 +10,4 @@ project.private.config.json
 platform/web/dist/
 platform/**/*.tsbuildinfo
 platform/.env
+platform/server/.env

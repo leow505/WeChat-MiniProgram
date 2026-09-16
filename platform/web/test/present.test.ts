@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import type { EventCard, EventDetail } from '@/api/types'
-import { dateChip, initial, rosterAsText, seatsLeft, statusTone, whenText } from '@/shared/present'
+import {
+  dateChip,
+  initial,
+  perPersonMinor,
+  rosterAsText,
+  seatsLeft,
+  statusTone,
+  whenText,
+} from '@/shared/present'
 import { fill } from '@/shared/web-strings'
 
 /** A minimal session, with only the fields the helper under test reads. */
@@ -165,5 +173,34 @@ describe('string interpolation', () => {
 
   it('leaves an unknown placeholder visible rather than printing undefined', () => {
     expect(fill('{a} and {b}', { a: 1 })).toBe('1 and {b}')
+  })
+})
+
+describe('what one person pays', () => {
+  it('is the plain share when the total divides evenly', () => {
+    expect(perPersonMinor(4800, 4)).toBe(1200)
+  })
+
+  it('is the higher of the two when it does not, so nobody is asked to beat it', () => {
+    // 50.00 across 3: two pay 16.67, one pays 16.66, and Σ is exactly 50.00.
+    expect(perPersonMinor(5000, 3)).toBe(1667)
+  })
+
+  it('divides by heads on court, not by people paying', () => {
+    // Four heads, one of them a guest somebody else covers.
+    expect(perPersonMinor(4000, 4)).toBe(1000)
+  })
+
+  it('peels the guest surcharge off before dividing', () => {
+    // 45.00 with a 5.00 surcharge leaves 40.00 across 4.
+    expect(perPersonMinor(4500, 4, 500)).toBe(1000)
+  })
+
+  it('ignores a surcharge larger than the total, which means it was never charged', () => {
+    expect(perPersonMinor(1000, 4, 4000)).toBe(250)
+  })
+
+  it('is nothing when nobody is paying', () => {
+    expect(perPersonMinor(5000, 0)).toBe(0)
   })
 })
