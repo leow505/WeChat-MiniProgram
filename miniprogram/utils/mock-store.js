@@ -8,7 +8,7 @@
 const rules = require('./rules')
 const fmt = require('./format')
 
-const KEY = 'mock_db_v14'
+const KEY = 'mock_db_v15'
 const ME = 'mock_openid_self'
 
 const now = () => Date.now()
@@ -23,28 +23,16 @@ function localOf(utcMs) {
   )
 }
 
+/** Today's local date, "2026-09-16", for deciding whether seeded times still hold. */
+function today() {
+  return localOf(Date.now()).slice(0, 10)
+}
+
 const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六']
 
 /** Weekday of a slot, so seeded titles can't drift out of sync with their dates. */
 function weekdayOf(utcMs) {
   return '周' + WEEKDAY[new Date(utcMs).getDay()]
-}
-
-/**
- * A slot N hours out, for exercising the near-deadline countdown.
- *
- * Rounded down to the hour: an unrounded stamp rendered as "03:29-05:29", which reads
- * as a bug rather than as a badminton session.
- */
-function slotInHours(hoursAhead, durationHours) {
-  const start =
-    Math.floor((Date.now() + hoursAhead * rules.HOUR) / rules.HOUR) * rules.HOUR
-  return {
-    start_at: start,
-    start_local: localOf(start),
-    end_at: start + durationHours * rules.HOUR,
-    end_local: localOf(start + durationHours * rules.HOUR),
-  }
 }
 
 /** UTC ms + wall clock for "N days from now at HH:00". §10.2 */
@@ -277,17 +265,30 @@ function seed() {
   addMembership('u_lin', 'v_north', 'Lin Hao', 'NS-2041', true)
   addMembership('u_li', 'v_north', 'Li Xiang', '', false)
 
+  /**
+   * Every upcoming session is at least two days out, and the finished ones are
+   * yesterday. Nothing sits within a day of now: a demo opened on a session whose
+   * deadline has already passed reads as broken data rather than as a closed session,
+   * and a session that starts in three hours cannot show off the join flow at all.
+   *
+   * Spread across days rather than stacked on one, so the list is a list.
+   */
   const thu = slot(2, 19, 2)
-  const sat = slot(4, 10, 2)
-  const tue = slot(1, 20, 2)
   const wed = slot(3, 18, 1.5)
+  const sat = slot(4, 10, 2)
   const fri = slot(5, 19, 2)
-  const soon = slotInHours(9, 2) // deadline inside the 12h countdown window
-  // Three finished sessions, because settlement can only happen after play (§9.1) and
-  // every other seeded session is in the future.
-  const played = slot(-3, 19, 2)
-  const owed = slot(-6, 10, 2)
-  const collect = slot(-1, 19, 2)
+  const tue = slot(6, 20, 2)
+  // Two days out like the rest; what closes soon is its signup deadline, set below.
+  const soon = slot(2, 21, 2)
+  /**
+   * Finished, because settlement can only happen after play (§9.1). Yesterday, so the
+   * split is about a session people still remember — except the overdue one, which
+   * has to predate its club's 24h grace window to be overdue at all, whatever hour
+   * the demo is opened at.
+   */
+  const played = slot(-1, 19, 2)
+  const collect = slot(-1, 10, 2)
+  const owed = slot(-2, 10, 2)
 
   const common = {
     court_status: 'NOT_BOOKED',
@@ -489,9 +490,8 @@ function seed() {
       _id: 'e_soon',
       club_id: 'c_thu',
       creator_openid: 'u_chen',
-      // Time-neutral on purpose: this slot is 9h from whenever you compile, so a
-      // title saying 今晚 was wrong for most of the day. Same trap as the weekday
-      // titles below.
+      // Time-neutral on purpose: a title saying 今晚 is wrong for most of the day.
+      // Same trap as the weekday titles below.
       title: '临时约球',
       venue_id: 'v_river',
       venue_snapshot: {
@@ -508,17 +508,24 @@ function seed() {
       capacity: 6,
       min_players: 4,
       signup_open_at: now() - rules.HOUR,
-      join_deadline_rule: 'AT_EVENT_START',
-      join_deadline_at: null,
-      join_deadline_local: '',
+      /**
+       * The one session closing inside the 12h countdown window, so the "closes in
+       * N hours" line has something to render. It is the deadline that is near, not
+       * the session: an organizer who wants numbers early sets exactly this.
+       */
+      join_deadline_rule: 'AT_TIME',
+      join_deadline_at: now() + 9 * rules.HOUR,
+      join_deadline_local: localOf(now() + 9 * rules.HOUR),
       visibility: 'CLUB_ONLY',
       max_guests_per_member: 1,
       cost_estimate_per_person: 800,
       cost_note: '',
       level_hint: 'BEGINNER',
+      // Courts written and the seeded user holding a seat: the one session that shows
+      // the court on its card in the games list. §3.5
       court_status: 'CONFIRMED',
       court_assignments: [{ label: 'Court 2', note: '' }],
-      roster_count: 2,
+      roster_count: 3,
       created_at: now() - rules.HOUR,
       updated_at: now(),
     }),
@@ -686,6 +693,8 @@ function seed() {
 
   addSignup('e_soon', 'u_chen', 'FEMALE', 'ROSTER', [], 1)
   addSignup('e_soon', 'u_he', 'MALE', 'ROSTER', [], 0.5)
+  // Confirmed, not waiting: courts only show to somebody holding a seat. §3.5
+  addSignup('e_soon', ME, 'UNSPECIFIED', 'ROSTER', [], 0.25)
 
   // e_closed: exactly at capacity with on_full: CLOSE, so nobody can queue.
   addSignup('e_closed', 'u_chen', 'FEMALE', 'ROSTER', [], 10)
@@ -820,6 +829,9 @@ function seed() {
   addShare('e_owed', 'u_liu', 1200, 'WAIVED') // an admin wrote one off, §9.4
 
   return {
+    // The day these times were computed from. Anything stored under an earlier date
+    // describes sessions that have since drifted into the past.
+    seeded_on: today(),
     users,
     events,
     signups,
@@ -832,9 +844,20 @@ function seed() {
   }
 }
 
+/**
+ * The stored demo data, reseeded when it no longer describes today.
+ *
+ * Seeded times are relative to the day they were written, so data left in storage
+ * overnight puts every "upcoming" session in the past — the demo then opens on a
+ * screen full of closed sessions, which reads as a broken app rather than as stale
+ * data. A day-old store is therefore replaced rather than loaded. Edits made during
+ * a session survive within that day, which is what makes the flows demonstrable;
+ * 我的 → 重置本地演示数据 forces it sooner.
+ */
 function load() {
   const raw = wx.getStorageSync(KEY)
-  if (raw && raw.events && raw.clubs && raw.event_bills && raw.bill_shares) return raw
+  const usable = raw && raw.events && raw.clubs && raw.event_bills && raw.bill_shares
+  if (usable && raw.seeded_on === today()) return raw
   const seeded = seed()
   wx.setStorageSync(KEY, seeded)
   return seeded

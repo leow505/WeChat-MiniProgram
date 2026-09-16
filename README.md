@@ -35,7 +35,12 @@ It runs on local demo data out of the box: four clubs (you own one, with a join 
 waiting), three venues, and nine sessions chosen to cover the awkward states — full with a
 waitlist, full with no waitlist, gender-balanced with one female slot left, one closing
 inside the countdown window, plus three finished ones: a split waiting to be published, a
-bill you are collecting on, and a share you owe. Reset under **我的 → 重置本地演示数据**.
+bill you are collecting on, and a share you owe.
+
+Times are relative to the day you open it: every upcoming session is at least two days
+out, the finished ones are yesterday, and the store reseeds itself when the day turns so
+the demo never opens on sessions that have drifted into the past. Edits you make during a
+day survive it; **我的 → 重置本地演示数据** forces a reseed sooner.
 
 Two of the four clubs are ones you are *not* in, so joining is testable. Clubs are not
 discoverable yet, so enter their invite code under **俱乐部 → 用邀请码加入**:
