@@ -1626,8 +1626,18 @@ const actions = {
     return { codes }
   },
 
-  'dev.reset'() {
-    store.reset()
+  /**
+   * Put the demo back to its seeded state. §12 (developer affordance, not a rule)
+   *
+   * Mutated in place rather than written straight to storage: dispatch persists the db
+   * it loaded *before* the action ran, so a fresh seed written behind its back was
+   * overwritten the moment this returned — the button on the Me tab reported success
+   * and changed nothing.
+   */
+  'dev.reset'(db) {
+    const fresh = store.seed()
+    Object.keys(db).forEach((key) => delete db[key])
+    Object.assign(db, fresh)
     return { ok: true }
   },
 }

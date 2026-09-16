@@ -297,6 +297,25 @@ const detail = (id) => call('event.detail', { eventId: id })
     is('leaving no card behind', (await ma('venue.myMemberships', {})).memberships.length, 0)
   }
 
+  // --- resetting the demo actually resets it -------------------------------
+  // Last in the file on purpose: it puts every seeded document back, so anything
+  // asserted after it would be asserting against a different session's state.
+  //
+  // dispatch persists the db it loaded before the action ran, so a reset that wrote a
+  // fresh seed straight to storage was overwritten the moment it returned: the button
+  // on the Me tab said "done" and changed nothing.
+  {
+    // e_thu is in the club the seeded user owns, so it is theirs to cancel.
+    await call('event.cancel', { eventId: 'e_thu' })
+    await call('club.joinByCode', { code: 'DROPS5' })
+    is('a cancelled session stays cancelled', (await detail('e_thu')).status, 'CANCELLED')
+    const joinedBefore = (await call('club.mine', {})).joined.length
+
+    await call('dev.reset', {})
+    is('a reset brings the session back', (await detail('e_thu')).status, 'OPEN')
+    is('and undoes the club that was joined', (await call('club.mine', {})).joined.length, joinedBefore - 1)
+  }
+
   console.log(`\n${pass} passed, ${fail} failed`)
   process.exit(fail ? 1 : 0)
 })().catch((err) => {

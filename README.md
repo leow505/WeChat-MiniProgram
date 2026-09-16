@@ -61,7 +61,7 @@ offline. It is not a stub of a few endpoints.
 ```bash
 node tests/rules.test.js       # 296 assertions, against both copies of the pure logic
 node tests/bills.test.js       # 118 assertions, the settlement flow and money maths
-node tests/organizer.test.js   #  61 assertions, a live session's rules and club money
+node tests/organizer.test.js   #  64 assertions, a live session's rules and club money
 node tests/i18n.test.js        # 398 checks, every label key exists and is rendered
 ```
 

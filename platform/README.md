@@ -107,7 +107,7 @@ thing checking that the two copies of the shared rules still agree. Run those to
 cd ..
 node tests/rules.test.js       # 296  pure logic, against BOTH copies
 node tests/bills.test.js       # 118  settlement flow and money maths
-node tests/organizer.test.js   #  61  a live session's rules and club money
+node tests/organizer.test.js   #  64  a live session's rules and club money
 node tests/i18n.test.js        # 398  every label exists, and is rendered
 ```
 
