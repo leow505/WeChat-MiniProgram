@@ -416,6 +416,9 @@ async function detail({ eventId }, openid) {
 
   return Object.assign(card(ev, mine), {
     club_name: club ? club.name : '',
+    // Whether the club link on the detail page goes anywhere: its page is members
+    // only, so offering the tap to anybody else is a dead end. §3.10
+    is_club_member: naming.isActiveMember(myMember),
     organizer_name: nameOf(ev.creator_openid),
     is_organizer: ev.creator_openid === openid,
     can_manage: canManage,

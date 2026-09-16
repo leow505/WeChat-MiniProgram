@@ -48,10 +48,15 @@
     </view>
   </view>
 
-  <view wx:if="{{ev.club_name}}" class="strip" bindtap="openClub">
+  <!-- The club is worth naming either way; only a member can open its page. §3.10 -->
+  <view wx:if="{{ev.club_name && ev.is_club_member}}" class="strip" bindtap="openClub">
     <text class="k">{{t.club}}</text>
     <text class="v is-link">{{ev.club_name}}</text>
     <text class="chev">›</text>
+  </view>
+  <view wx:elif="{{ev.club_name}}" class="strip">
+    <text class="k">{{t.club}}</text>
+    <text class="v">{{ev.club_name}}</text>
   </view>
 
   <!-- who's coming: roster and waitlist in one card, divided -->

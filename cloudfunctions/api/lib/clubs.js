@@ -163,6 +163,16 @@ async function detail({ clubId }, openid) {
   const isAdmin = naming.canAdminClub(me)
   const isMember = naming.isActiveMember(me)
 
+  /**
+   * Members only, and a pending request is not membership. §3.10
+   *
+   * This returned the roster, the venues and the club's sessions to anybody holding
+   * the id — including somebody whose request had not been approved, and somebody who
+   * had been rejected. Admission is the decision the club makes about who sees its
+   * people; joining is by invite code, which needs no page.
+   */
+  if (!isMember) fail('NOT_MEMBER')
+
   const memberRows = await db
     .collection('club_members')
     .where({ club_id: clubId, status: naming.MemberStatus.ACTIVE })
@@ -202,13 +212,11 @@ async function detail({ clubId }, openid) {
     ? (await db.collection('venues').where({ _id: _.in(club.venue_ids) }).get()).data
     : []
 
-  // Upcoming sessions: CLUB_ONLY ones are only listed to actual members. §3.6
+  // Every caller here is a member, so there is no visibility filter left to apply. §3.6
   const now = Date.now()
-  const eventQuery = { club_id: clubId, lifecycle: 'ACTIVE', end_at: _.gt(now) }
-  if (!isMember) eventQuery.visibility = 'PUBLIC'
   const events = await db
     .collection('events')
-    .where(eventQuery)
+    .where({ club_id: clubId, lifecycle: 'ACTIVE', end_at: _.gt(now) })
     .orderBy('start_at', 'asc')
     .limit(20)
     .get()

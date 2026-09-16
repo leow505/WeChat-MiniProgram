@@ -89,7 +89,12 @@ Page({
         })
         wx.setNavigationBarTitle({ title: club.name })
       })
-      .catch((err) => wx.showToast({ title: i18n.errText(err), icon: 'none' }))
+      .catch((err) => {
+        // NOT_MEMBER lands here for a pending or rejected request, and there is nothing
+        // on this page for them: the toast is the whole answer, so leave. §3.10
+        wx.showToast({ title: i18n.errText(err), icon: 'none' })
+        setTimeout(() => wx.navigateBack(), 900)
+      })
   },
 
   switchTab(e) {
@@ -104,54 +109,7 @@ Page({
     wx.navigateTo({ url: `/pages/create/create?clubId=${this.data.clubId}` })
   },
 
-  // --- join / leave ---------------------------------------------------------
-  /**
-   * A club that plays on somebody's card needs the name on that card, and joining is
-   * the moment to ask: the membership form below is only open to members, so asking
-   * afterwards leaves a REQUIRED club unjoinable. The name becomes how this person
-   * reads inside this club (§3.8); their own display name is untouched.
-   */
-  join() {
-    const club = this.data.d.club
-    const asks = club.membership_policy !== 'NOT_REQUIRED' && club.primary_venue_id
-    if (!asks || this.data.d.my_membership) return this.doJoin()
-
-    const t = this.data.t
-    wx.showModal({
-      title: t.membershipName,
-      content: t.membershipAskWhy,
-      editable: true,
-      placeholderText: t.membershipNamePlaceholder,
-      success: (r) => {
-        if (!r.confirm) return
-        const name = String(r.content || '').trim()
-        // Only a REQUIRED club insists; a REQUESTED one carries on without it.
-        if (!name && club.membership_policy === 'REQUIRED') {
-          wx.showToast({ title: t.vMembershipName, icon: 'none' })
-          return
-        }
-        this.doJoin(name)
-      },
-    })
-  },
-
-  doJoin(membershipName) {
-    const t = this.data.t
-    api
-      .callWithToast('club.join', {
-        clubId: this.data.clubId,
-        membership_name: membershipName || '',
-      })
-      .then((res) => {
-        wx.showToast({
-          title: res.status === 'ACTIVE' ? t.joinedClubToast : t.submittedToast,
-          icon: 'success',
-        })
-        this.load()
-      })
-      .catch(() => {})
-  },
-
+  // --- leave ----------------------------------------------------------------
   leave() {
     const t = this.data.t
     wx.showModal({

@@ -14,9 +14,11 @@
       <text class="dim">{{d.club.member_count}} {{t.membersTitle}} · {{d.policy_label}}</text>
     </view>
 
-    <view wx:if="{{!d.is_member && d.my_status !== 'PENDING'}}" class="btn" style="margin-top:20rpx" bindtap="join">
-      {{d.club.join_policy === 'OPEN' ? t.joinClubOpen : t.joinClub}}
-    </view>
+    <!--
+      No join button: this page is members-only now (§3.10), so nobody who could tap
+      one can open it. Joining is by invite code on the clubs tab, which is also where
+      a club that plays on a venue card asks for the name — see clubs.wxml.
+    -->
   </view>
 
   <!-- prompt for a membership name where the club asks for one. §3.8 -->

@@ -246,6 +246,29 @@ describe('reading lists', () => {
   })
 })
 
+describe('a club page', () => {
+  it('is refused to a stranger and to a request still waiting', async () => {
+    const { clubId } = await dispatch(
+      'club.create',
+      { club: { name: 'Members Only', join_policy: 'APPROVAL' } },
+      ORGANIZER
+    )
+    // A pending request is not membership. §3.10
+    expect((await dispatch('club.join', { clubId }, 'u_a')).status).toBe('PENDING')
+    await expect(dispatch('club.detail', { clubId }, 'u_a')).rejects.toMatchObject({
+      code: 'NOT_MEMBER',
+    })
+    await expect(dispatch('club.detail', { clubId }, 'u_stranger')).rejects.toMatchObject({
+      code: 'NOT_MEMBER',
+    })
+
+    await dispatch('club.decide', { clubId, targetOpenid: 'u_a', approve: true }, ORGANIZER)
+    const view = await dispatch('club.detail', { clubId }, 'u_a')
+    expect(view.is_member).toBe(true)
+    expect(view.members.map((m) => m.openid)).toContain('u_a')
+  })
+})
+
 describe('a club that plays on a venue card', () => {
   /** A club whose courts are booked on a member's card, with a venue attached. */
   async function clubOnACard(membership_policy) {

@@ -24,6 +24,9 @@ Page({
     joiningByCode: false,
     form: { name: '', description: '', join_policy: 'APPROVAL' },
     code: '',
+    // Revealed when a club turns out to ask for a venue membership name. §3.8
+    askingMembership: false,
+    joinName: '',
     policyOptions: [],
     /**
      * Tourist mode only: what the demo data can be joined with. A club you are not in
@@ -64,8 +67,18 @@ Page({
       .catch(() => this.setData({ loading: false }))
   },
 
+  /**
+   * A club page is for members (§3.10), so a request still waiting has nothing to
+   * open — the card says 审核中 and tapping it repeats that rather than bouncing off
+   * a server refusal.
+   */
   openClub(e) {
-    wx.navigateTo({ url: `/pages/club/club?id=${e.currentTarget.dataset.id}` })
+    const { id, pending } = e.currentTarget.dataset
+    if (pending) {
+      wx.showToast({ title: this.data.t.pendingApproval, icon: 'none' })
+      return
+    }
+    wx.navigateTo({ url: `/pages/club/club?id=${id}` })
   },
 
   // --- create ---------------------------------------------------------------
@@ -98,7 +111,12 @@ Page({
 
   // --- join by code ---------------------------------------------------------
   toggleJoinByCode() {
-    this.setData({ joiningByCode: !this.data.joiningByCode, creating: false })
+    this.setData({
+      joiningByCode: !this.data.joiningByCode,
+      creating: false,
+      askingMembership: false,
+      joinName: '',
+    })
   },
 
   /** The mock backend only; any other transport rejects with NO_ACTION and shows nothing. */
@@ -123,43 +141,36 @@ Page({
     this.setData({ code: (e.detail.value || '').toUpperCase() })
   },
 
+  onJoinName(e) {
+    this.setData({ joinName: e.detail.value })
+  },
+
   /**
    * An invite code identifies the club on its own, so it's matched client-side
    * against nothing — the server resolves it. We only have the code, so we ask the
    * server to find the club by code via club.join with a clubId of the code.
+   *
+   * A code carries no club with it, so whether this club plays on a venue card is only
+   * knowable from the answer: MEMBERSHIP_REQUIRED reveals the field, in the panel next
+   * to the code, and the next tap tries again with it. (It used to open an editable
+   * wx.showModal, whose `content` is the input's value rather than a description — so
+   * the explanation was being prefilled into the one-line box.)
    */
   submitCode() {
+    const t = this.data.t
     const code = this.data.code.trim()
     if (!code) {
-      wx.showToast({ title: this.data.t.vInviteCode, icon: 'none' })
+      wx.showToast({ title: t.vInviteCode, icon: 'none' })
       return
     }
-    // A code carries no club with it, so whether this club plays on a venue card is
-    // only knowable from the answer: ask for the name and try once more. §3.8
-    this.tryCode(code, '').catch((err) => {
-      if (err && err.code === 'MEMBERSHIP_REQUIRED') return this.askMembership(code)
+    this.tryCode(code, String(this.data.joinName || '').trim()).catch((err) => {
+      if (err && err.code === 'MEMBERSHIP_REQUIRED') {
+        this.setData({ askingMembership: true })
+        // Already asked, still blank: say so rather than refusing again in silence.
+        if (this.data.askingMembership) wx.showToast({ title: t.vMembershipName, icon: 'none' })
+        return
+      }
       wx.showToast({ title: i18n.errText(err), icon: 'none' })
-    })
-  },
-
-  askMembership(code) {
-    const t = this.data.t
-    wx.showModal({
-      title: t.membershipName,
-      content: t.membershipAskWhy,
-      editable: true,
-      placeholderText: t.membershipNamePlaceholder,
-      success: (r) => {
-        if (!r.confirm) return
-        const name = String(r.content || '').trim()
-        if (!name) {
-          wx.showToast({ title: t.vMembershipName, icon: 'none' })
-          return
-        }
-        this.tryCode(code, name).catch((err) =>
-          wx.showToast({ title: i18n.errText(err), icon: 'none' })
-        )
-      },
     })
   },
 
@@ -170,7 +181,7 @@ Page({
         title: res.status === 'ACTIVE' ? t.joinedClubToast : t.submittedToast,
         icon: 'success',
       })
-      this.setData({ joiningByCode: false, code: '' })
+      this.setData({ joiningByCode: false, code: '', askingMembership: false, joinName: '' })
       this.load()
       // A club you have just joined is no longer one you can join.
       if (config.API_MODE === 'mock') this.loadDemoCodes(t)

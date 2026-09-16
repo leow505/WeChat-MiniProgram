@@ -502,6 +502,8 @@ const actions = {
 
     return Object.assign(eventCard(db, ev), {
       organizer_name: nameFor(db, ev.creator_openid, club),
+      // The club page is members only, so only a member gets a link to it. §3.10
+      is_club_member: naming.isActiveMember(myMember(db, ev.club_id, actorId())),
       is_organizer: ev.creator_openid === actorId(),
       can_manage: manage,
       roster,
@@ -1281,6 +1283,9 @@ const actions = {
     const isAdmin = naming.canAdminClub(me)
     const isMember = naming.isActiveMember(me)
 
+    // Members only, and a pending request is not membership. §3.10
+    if (!isMember) return fail('NOT_MEMBER')
+
     const rows = Object.values(db.club_members).filter((m) => m.club_id === clubId)
     const memberRows = rows.filter((m) => m.status === 'ACTIVE')
     const pendingRows = isAdmin ? rows.filter((m) => m.status === 'PENDING') : []
@@ -1304,10 +1309,8 @@ const actions = {
     const upcoming = Object.values(db.events)
       .filter(
         (ev) =>
-          ev.club_id === clubId &&
-          ev.lifecycle === 'ACTIVE' &&
-          ev.end_at > t &&
-          (isMember || ev.visibility === 'PUBLIC')
+          // Every caller here is a member, so there is no visibility filter left. §3.6
+          ev.club_id === clubId && ev.lifecycle === 'ACTIVE' && ev.end_at > t
       )
       .sort((a, b) => a.start_at - b.start_at)
       .map((ev) => eventCard(db, ev))

@@ -7,8 +7,9 @@
   <view
     wx:for="{{joined}}"
     wx:key="_id"
-    class="ccard"
+    class="ccard {{item.pending ? 'is-pending' : ''}}"
     data-id="{{item._id}}"
+    data-pending="{{item.pending}}"
     bindtap="openClub"
   >
     <view class="ccard-main">
@@ -96,6 +97,18 @@
           <text class="demo-code-v">{{item.name}} · {{item.policy_label}}</text>
         </view>
       </view>
+      <!-- Revealed once the code turns out to belong to a club that plays on a venue
+           card: the field, and the sentence explaining it, side by side. §3.8 -->
+      <view wx:if="{{askingMembership}}" class="field">
+        <text class="field-label">{{t.membershipName}}</text>
+        <input
+          class="field-input"
+          placeholder="{{t.membershipNamePlaceholder}}"
+          value="{{joinName}}"
+          bindinput="onJoinName"
+        />
+      </view>
+      <view wx:if="{{askingMembership}}" class="field-hint">{{t.membershipAskWhy}}</view>
       <button class="btn" bindtap="submitCode">{{t.joinClub}}</button>
     </view>
   </view>

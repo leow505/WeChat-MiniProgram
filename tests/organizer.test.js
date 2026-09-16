@@ -234,6 +234,31 @@ const detail = (id) => call('event.detail', { eventId: id })
     is('a claimed status without labels is ignored', ev.court_status, 'NOT_BOOKED')
   }
 
+  // --- a club page is for members (§3.10) ----------------------------------
+  // It used to hand the roster, the venues and the club's sessions to anybody holding
+  // the id — including somebody whose request was still waiting.
+  {
+    const as = (actorId) => (action, payload) => mock.dispatch(action, payload, { actorId })
+
+    const d = await call('club.detail', { clubId: 'c_thu' })
+    is('the owner sees the club', d.members.length > 0, true)
+    is('and its sessions', d.upcoming.length > 0, true)
+
+    await refuses('a stranger cannot', 'NOT_MEMBER',
+      as('u_zhang')('club.detail', { clubId: 'c_thu' }))
+    // u_zhao's request is seeded as PENDING.
+    await refuses('and neither can a pending request', 'NOT_MEMBER',
+      as('u_zhao')('club.detail', { clubId: 'c_thu' }))
+    is('a plain member does', (await as('u_li')('club.detail', { clubId: 'c_thu' })).is_member, true)
+
+    // The detail page decides whether to offer the club link from the same fact.
+    is(
+      'a session tells a member the club is theirs to open',
+      (await as('u_li')('event.detail', { eventId: 'e_thu' })).is_club_member,
+      true
+    )
+  }
+
   // --- a club that plays on somebody's card asks on the join tap (§3.8) ----
   // The membership form is only open to members, so a REQUIRED club could not be
   // joined at all unless the name travels with the join itself.
