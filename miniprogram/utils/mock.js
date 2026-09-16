@@ -1594,6 +1594,31 @@ const actions = {
     return { venue, holders, coverage }
   },
 
+  /**
+   * The demo's joinable clubs, for the tourist-mode hint under the invite-code field.
+   *
+   * Club discovery is deferred (§13), so a club you are not in is reachable only by
+   * its code — which left the whole join flow undemonstrable unless you had read the
+   * README. Mock only: in cloud or http mode the action does not exist, the client's
+   * call fails with NO_ACTION, and no hint is shown.
+   */
+  'dev.inviteCodes'(db) {
+    const mine = {}
+    Object.values(db.club_members)
+      .filter((member) => member.openid === actorId())
+      .forEach((member) => {
+        mine[member.club_id] = true
+      })
+    const codes = Object.values(db.clubs)
+      .filter((club) => !mine[club._id] && club.invite_code)
+      .map((club) => ({
+        code: club.invite_code,
+        name: club.name,
+        membership_policy: club.membership_policy,
+      }))
+    return { codes }
+  },
+
   'dev.reset'() {
     store.reset()
     return { ok: true }

@@ -24,7 +24,10 @@ Page({
     clubCount: 0,
     todo: [],
     hostingCount: 0,
-    isMock: config.USE_MOCK,
+    // config.USE_MOCK became config.API_MODE when the http transport landed, and this
+    // read was left behind — so the whole dev-tools card, reset button included, never
+    // rendered again. The docs have been telling people to use a button they cannot see.
+    isMock: config.API_MODE === 'mock',
   },
 
   onShow() {

@@ -81,6 +81,21 @@
 
     <view wx:if="{{joiningByCode}}" class="inset">
       <input class="code-input" placeholder="{{t.inviteCodePlaceholder}}" value="{{code}}" maxlength="6" bindinput="onCode" />
+      <!-- Tourist mode: the demo's own codes, since a club you are not in cannot be
+           listed. Tapping one fills the field. -->
+      <view wx:if="{{demoCodes.length}}" class="demo-codes">
+        <text class="field-hint">{{t.demoCodesHint}}</text>
+        <view
+          wx:for="{{demoCodes}}"
+          wx:key="code"
+          class="demo-code"
+          data-code="{{item.code}}"
+          bindtap="useDemoCode"
+        >
+          <text class="demo-code-k">{{item.code}}</text>
+          <text class="demo-code-v">{{item.name}} · {{item.policy_label}}</text>
+        </view>
+      </view>
       <button class="btn" bindtap="submitCode">{{t.joinClub}}</button>
     </view>
   </view>

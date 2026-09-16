@@ -207,6 +207,7 @@ const zh = {
   joinByCode: '用邀请码加入',
   inviteCode: '邀请码',
   inviteCodePlaceholder: '输入 6 位邀请码',
+  demoCodesHint: '演示数据里可以加入的俱乐部，点一下填入：',
   rotateCode: '换一个',
   tapToCopy: '点击复制',
   joinClub: '申请加入',
@@ -325,7 +326,9 @@ const zh = {
   perShare: '每人 {amount}',
   remainderNote: '除不尽的零头分给最早报名的 {n} 位，其他人少一分，总额刚好分完。',
   guestSurchargeLine: '{n} 位朋友的场馆附加费共 {amount}，先从总额里扣除',
-  noTotalYet: '还没填实付总额，先去管理页填一下',
+  // Pointed at the manage page, where the total hasn't been entered since it moved to
+  // this screen (§9.1) — and now says what the box above actually does.
+  noTotalYet: '在上面填实付总额，每人多少会边打边算出来',
   publishBill: '发布分摊',
   updateBill: '更新分摊',
   publishHint: '发布后每人看到自己该付多少，{hours} 小时内结清。发布前随便改。',
@@ -581,6 +584,7 @@ const en = {
   joinByCode: 'Join with a code',
   inviteCode: 'Invite code',
   inviteCodePlaceholder: 'Enter the 6-character code',
+  demoCodesHint: 'Clubs the demo data lets you join — tap to fill:',
   rotateCode: 'New code',
   tapToCopy: 'Tap to copy',
   joinClub: 'Request to join',
@@ -691,9 +695,13 @@ const en = {
   splitList: 'Each person',
   unitsLine: '{units} playing, {n} paying',
   perShare: '{amount} per person',
-  remainderNote: 'The odd change goes to the {n} earliest signups; everybody else pays a cent less, so the total comes out exact.',
+  // "the {n} earliest signups" read as "the 1 earliest signups" whenever the remainder
+  // was a single cent, which is most totals. The (s) is the same device guestSurchargeLine
+  // uses, and it stays right for every n without the dictionary needing plural forms.
+  remainderNote: 'The odd {n} cent(s) go one each to the earliest signups, so the total comes out exact.',
   guestSurchargeLine: 'Venue surcharge for {n} guest(s): {amount}, taken off the total first',
-  noTotalYet: 'No total recorded yet — add what you paid on the manage screen',
+  // see the note on the zh side
+  noTotalYet: 'Enter what you paid above — the per-person figure follows as you type',
   publishBill: 'Publish the split',
   updateBill: 'Update the split',
   publishHint: 'Once published everyone sees what they owe, due within {hours}h. Change anything you like before that.',

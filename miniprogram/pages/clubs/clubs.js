@@ -1,5 +1,6 @@
 const api = require('../../utils/api')
 const i18n = require('../../utils/i18n')
+const config = require('../../config')
 
 const POLICY_KEY = { OPEN: 'jpOPEN', APPROVAL: 'jpAPPROVAL' }
 
@@ -24,11 +25,18 @@ Page({
     form: { name: '', description: '', join_policy: 'APPROVAL' },
     code: '',
     policyOptions: [],
+    /**
+     * Tourist mode only: what the demo data can be joined with. A club you are not in
+     * cannot be listed (discovery is deferred, §13), so without this the join flow is
+     * only reachable by someone who has read the README.
+     */
+    demoCodes: [],
   },
 
   onShow() {
     const t = i18n.pack()
     wx.setNavigationBarTitle({ title: t.tabClubs })
+    if (config.API_MODE === 'mock') this.loadDemoCodes(t)
     this.setData({
       t,
       policyOptions: [
@@ -93,6 +101,24 @@ Page({
     this.setData({ joiningByCode: !this.data.joiningByCode, creating: false })
   },
 
+  /** The mock backend only; any other transport rejects with NO_ACTION and shows nothing. */
+  loadDemoCodes(t) {
+    api
+      .call('dev.inviteCodes', {})
+      .then((res) =>
+        this.setData({
+          demoCodes: (res.codes || []).map((c) =>
+            Object.assign({}, c, { policy_label: t['mp' + c.membership_policy] || '' })
+          ),
+        })
+      )
+      .catch(() => this.setData({ demoCodes: [] }))
+  },
+
+  useDemoCode(e) {
+    this.setData({ code: e.currentTarget.dataset.code, joiningByCode: true })
+  },
+
   onCode(e) {
     this.setData({ code: (e.detail.value || '').toUpperCase() })
   },
@@ -146,6 +172,8 @@ Page({
       })
       this.setData({ joiningByCode: false, code: '' })
       this.load()
+      // A club you have just joined is no longer one you can join.
+      if (config.API_MODE === 'mock') this.loadDemoCodes(t)
     })
   },
 

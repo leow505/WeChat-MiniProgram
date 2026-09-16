@@ -132,3 +132,35 @@
 .join-btn::after {
   border: none;
 }
+
+/*
+  The demo's invite codes, tourist mode only.
+
+  A row per club rather than a run of codes in a sentence: the code is the thing to
+  tap, so it gets the tap target and the mono-ish weight, and the club it opens is
+  named beside it. Sits inside the code panel, under the field it fills.
+*/
+.demo-codes {
+  margin: 8rpx 0 20rpx;
+}
+.demo-code {
+  display: flex;
+  align-items: baseline;
+  gap: 14rpx;
+  margin-top: 10rpx;
+  padding: 12rpx 18rpx;
+  border-radius: 12rpx;
+  background: #eeeefc;
+}
+.demo-code-k {
+  flex: 0 0 auto;
+  font-size: 27rpx;
+  font-weight: 600;
+  letter-spacing: 3rpx;
+  color: #4346c4;
+}
+.demo-code-v {
+  flex: 1;
+  font-size: 21rpx;
+  color: #55555f;
+}

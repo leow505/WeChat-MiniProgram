@@ -2,7 +2,7 @@
  * Single entry point for all data access.
  *
  * Every call is `api.call('<domain>.<action>', payload)`. Both backends implement
- * the same action names, so flipping config.USE_MOCK swaps the whole data layer
+ * the same action names, so flipping config.API_MODE swaps the whole data layer
  * without touching a page. The cloud path targets one router cloud function
  * (`api`) rather than a function per action — shared logic stays shared, one
  * deploy, one warm pool.
