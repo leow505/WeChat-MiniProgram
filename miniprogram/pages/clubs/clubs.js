@@ -103,23 +103,50 @@ Page({
    * server to find the club by code via club.join with a clubId of the code.
    */
   submitCode() {
-    const t = this.data.t
     const code = this.data.code.trim()
     if (!code) {
-      wx.showToast({ title: t.vInviteCode, icon: 'none' })
+      wx.showToast({ title: this.data.t.vInviteCode, icon: 'none' })
       return
     }
-    api
-      .callWithToast('club.joinByCode', { code })
-      .then((res) => {
-        wx.showToast({
-          title: res.status === 'ACTIVE' ? t.joinedClubToast : t.submittedToast,
-          icon: 'success',
-        })
-        this.setData({ joiningByCode: false, code: '' })
-        this.load()
+    // A code carries no club with it, so whether this club plays on a venue card is
+    // only knowable from the answer: ask for the name and try once more. §3.8
+    this.tryCode(code, '').catch((err) => {
+      if (err && err.code === 'MEMBERSHIP_REQUIRED') return this.askMembership(code)
+      wx.showToast({ title: i18n.errText(err), icon: 'none' })
+    })
+  },
+
+  askMembership(code) {
+    const t = this.data.t
+    wx.showModal({
+      title: t.membershipName,
+      content: t.membershipAskWhy,
+      editable: true,
+      placeholderText: t.membershipNamePlaceholder,
+      success: (r) => {
+        if (!r.confirm) return
+        const name = String(r.content || '').trim()
+        if (!name) {
+          wx.showToast({ title: t.vMembershipName, icon: 'none' })
+          return
+        }
+        this.tryCode(code, name).catch((err) =>
+          wx.showToast({ title: i18n.errText(err), icon: 'none' })
+        )
+      },
+    })
+  },
+
+  tryCode(code, membershipName) {
+    const t = this.data.t
+    return api.call('club.joinByCode', { code, membership_name: membershipName }).then((res) => {
+      wx.showToast({
+        title: res.status === 'ACTIVE' ? t.joinedClubToast : t.submittedToast,
+        icon: 'success',
       })
-      .catch(() => {})
+      this.setData({ joiningByCode: false, code: '' })
+      this.load()
+    })
   },
 
 })

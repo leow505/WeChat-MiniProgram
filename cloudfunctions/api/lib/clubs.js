@@ -254,13 +254,31 @@ async function membershipsForVenue(venueId, openids) {
   return map
 }
 
-async function join({ clubId }, openid) {
+async function join({ clubId, membership_name, membership_no }, openid) {
   const club = await getOrNull('clubs', clubId)
   if (!club) fail('NOT_FOUND')
 
   const existing = await myMembership(clubId, openid)
   const outcome = naming.joinOutcome(club, existing)
   if (outcome.error) fail(outcome.error)
+
+  // Joining is when a club that asks for a venue membership asks for it: the name
+  // arrives with the join tap and is recorded before admission. Otherwise the only
+  // screen that takes it is behind being a member already. §3.8
+  if (
+    club.membership_policy !== naming.MembershipPolicy.NOT_REQUIRED &&
+    club.primary_venue_id &&
+    String(membership_name || '').trim()
+  ) {
+    // Required at call time, not at load: venues.js owns the upsert — the length
+    // caps, and dropping verification when the name changes — and requires this
+    // module itself.
+    const venues = require('./venues')
+    await venues.upsertMembership(
+      { venueId: club.primary_venue_id, membership_name, membership_no },
+      openid
+    )
+  }
 
   // A REQUIRED club needs a membership name on file first. §3.8
   if (club.membership_policy === naming.MembershipPolicy.REQUIRED) {
@@ -302,14 +320,14 @@ async function join({ clubId }, openid) {
  * never needs its id. Guarded against the empty string, which every non-invite
  * club stores.
  */
-async function joinByCode({ code }, openid) {
+async function joinByCode({ code, membership_name, membership_no }, openid) {
   const c = String(code || '').trim().toUpperCase()
   if (!c) fail('BAD_INVITE_CODE')
 
   const r = await db.collection('clubs').where({ invite_code: c }).limit(1).get()
   if (!r.data.length) fail('BAD_INVITE_CODE')
 
-  return join({ clubId: r.data[0]._id }, openid)
+  return join({ clubId: r.data[0]._id, membership_name, membership_no }, openid)
 }
 
 async function decide({ clubId, targetOpenid, approve, reason }, openid) {

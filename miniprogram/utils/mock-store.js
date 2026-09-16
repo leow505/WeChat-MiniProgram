@@ -8,7 +8,7 @@
 const rules = require('./rules')
 const fmt = require('./format')
 
-const KEY = 'mock_db_v13'
+const KEY = 'mock_db_v14'
 const ME = 'mock_openid_self'
 
 const now = () => Date.now()
@@ -109,6 +109,22 @@ function seed() {
       created_by: 'u_chen',
       created_at: now(),
     },
+    // The drop-in club's venue. Kept separate from the two above so that recording a
+    // card for one club does not silently satisfy the other. §3.8
+    v_west: {
+      _id: 'v_west',
+      name: 'Westside Courts',
+      address: '7 West Court Lane',
+      tz_label: 'America/Toronto',
+      currency: 'CAD',
+      membership_required: false,
+      max_courts_per_membership: 0,
+      guest_policy: 'ALLOWED',
+      guest_surcharge_minor: 0,
+      court_labels: ['1', '2', '3'],
+      created_by: 'u_zhao',
+      created_at: now(),
+    },
   }
 
   const clubs = {
@@ -161,6 +177,53 @@ function seed() {
       created_at: now() - 60 * 24 * rules.HOUR,
       updated_at: now(),
     },
+    // Two clubs the seeded user is *not* in, because joining one is the only way to
+    // see what a club asks for on the way in. Neither is discoverable (§13), so both
+    // are reached from the clubs tab with their invite code:
+    //
+    //   CARD22 — REQUIRED, so the join asks for the venue membership name and will
+    //            not proceed without it. Approval club: the request lands as pending.
+    //   DROPS5 — REQUESTED, so the join offers the same field and joins anyway if it
+    //            is left blank. Open club: membership is immediate.
+    //
+    // Their venues are ones the seeded user holds no card for, which is what makes
+    // the prompt appear at all. §3.8
+    c_card: {
+      _id: 'c_card',
+      name: 'Northside League',
+      description: '订场用会员卡 · Courts are booked on a member card',
+      cover_url: '',
+      owner_openid: 'u_lin',
+      join_policy: 'APPROVAL',
+      invite_code: 'CARD22',
+      member_count: 2,
+      settlement_grace_hours: 12,
+      currency: 'CAD',
+      membership_policy: 'REQUIRED',
+      venue_ids: ['v_north'],
+      primary_venue_id: 'v_north',
+      event_defaults: null,
+      created_at: now() - 45 * 24 * rules.HOUR,
+      updated_at: now(),
+    },
+    c_drop: {
+      _id: 'c_drop',
+      name: 'Westside Drop-in',
+      description: 'Casual drop-in · 会员名可填可不填',
+      cover_url: '',
+      owner_openid: 'u_zhao',
+      join_policy: 'OPEN',
+      invite_code: 'DROPS5',
+      member_count: 2,
+      settlement_grace_hours: 24,
+      currency: 'CAD',
+      membership_policy: 'REQUESTED',
+      venue_ids: ['v_west'],
+      primary_venue_id: 'v_west',
+      event_defaults: null,
+      created_at: now() - 20 * 24 * rules.HOUR,
+      updated_at: now(),
+    },
   }
 
   const club_members = {}
@@ -186,6 +249,11 @@ function seed() {
   addMember('c_open', 'u_chen', 'OWNER', 'ACTIVE', 60)
   addMember('c_open', 'u_sun', 'MEMBER', 'ACTIVE', 40)
   addMember('c_open', ME, 'MEMBER', 'ACTIVE', 15)
+  // The two clubs waiting to be joined by code — ME is deliberately absent from both.
+  addMember('c_card', 'u_lin', 'OWNER', 'ACTIVE', 45)
+  addMember('c_card', 'u_li', 'MEMBER', 'ACTIVE', 20)
+  addMember('c_drop', 'u_zhao', 'OWNER', 'ACTIVE', 20)
+  addMember('c_drop', 'u_sun', 'MEMBER', 'ACTIVE', 12)
 
   const venue_memberships = {}
   const addMembership = (openid, venueId, name, no, verified) => {
@@ -205,6 +273,9 @@ function seed() {
   addMembership(ME, 'v_river', 'Demo Player', 'RC-10021', true)
   addMembership('u_lin', 'v_river', 'Lin Hao', 'RC-10044', true)
   addMembership('u_chen', 'v_river', 'Chen Xiaoyu', '', false)
+  // Northside: the card the league books on, and one nobody has confirmed yet.
+  addMembership('u_lin', 'v_north', 'Lin Hao', 'NS-2041', true)
+  addMembership('u_li', 'v_north', 'Li Xiang', '', false)
 
   const thu = slot(2, 19, 2)
   const sat = slot(4, 10, 2)

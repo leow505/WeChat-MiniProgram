@@ -245,3 +245,66 @@ describe('reading lists', () => {
     })
   })
 })
+
+describe('a club that plays on a venue card', () => {
+  /** A club whose courts are booked on a member's card, with a venue attached. */
+  async function clubOnACard(membership_policy) {
+    const { clubId } = await dispatch(
+      'club.create',
+      { club: { name: 'Card Club', join_policy: 'OPEN', membership_policy } },
+      ORGANIZER
+    )
+    await dispatch(
+      'venue.create',
+      { clubId, venue: { name: 'Riverside Centre', membership_required: true } },
+      ORGANIZER
+    )
+    return clubId
+  }
+
+  it('refuses a join with no card where one is required', async () => {
+    const clubId = await clubOnACard('REQUIRED')
+    await expect(dispatch('club.join', { clubId }, 'u_a')).rejects.toMatchObject({
+      code: 'MEMBERSHIP_REQUIRED',
+    })
+  })
+
+  it('records the card that arrives with the join, and admits', async () => {
+    const clubId = await clubOnACard('REQUIRED')
+    const res = await dispatch('club.join', { clubId, membership_name: ' Card Name ' }, 'u_a')
+    expect(res.status).toBe('ACTIVE')
+
+    const mine = await dispatch('venue.myMemberships', {}, 'u_a')
+    expect(mine.memberships).toHaveLength(1)
+    expect(mine.memberships[0].membership_name).toBe('Card Name')
+    // Nobody has confirmed it at the door yet.
+    expect(mine.memberships[0].verified_at).toBe(null)
+  })
+
+  it('shows the card as the name inside the club, and nowhere else', async () => {
+    await dispatch('profile.upsert', { nickname: 'Nickname' }, 'u_a')
+    const clubId = await clubOnACard('REQUIRED')
+    await dispatch('club.join', { clubId, membership_name: 'Card Name' }, 'u_a')
+
+    const view = await dispatch('club.detail', { clubId }, ORGANIZER)
+    const member = view.members.find((m) => m.openid === 'u_a')
+    expect(member.name).toBe('Card Name')
+    expect(member.membership_verified).toBe(false)
+    // The name they chose for themselves is untouched by joining.
+    expect((await dispatch('profile.get', {}, 'u_a')).nickname).toBe('Nickname')
+  })
+
+  it('takes a card a REQUESTED club never insisted on', async () => {
+    const clubId = await clubOnACard('REQUESTED')
+    expect(
+      (await dispatch('club.join', { clubId, membership_name: 'Card Name' }, 'u_a')).status
+    ).toBe('ACTIVE')
+    expect((await dispatch('venue.myMemberships', {}, 'u_a')).memberships).toHaveLength(1)
+  })
+
+  it('ignores one offered to a club that does not ask', async () => {
+    const clubId = await clubOnACard('NOT_REQUIRED')
+    await dispatch('club.join', { clubId, membership_name: 'Card Name' }, 'u_a')
+    expect((await dispatch('venue.myMemberships', {}, 'u_a')).memberships).toHaveLength(0)
+  })
+})

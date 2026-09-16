@@ -1330,13 +1330,28 @@ const actions = {
     }
   },
 
-  'club.join'(db, { clubId }) {
+  'club.join'(db, { clubId, membership_name, membership_no }) {
     const club = db.clubs[clubId]
     if (!club) return fail('NOT_FOUND')
 
     const existing = myMember(db, clubId, actorId())
     const outcome = naming.joinOutcome(club, existing)
     if (outcome.error) return fail(outcome.error)
+
+    // A club that asks for a venue membership asks on the join tap, so the name is
+    // recorded before admission rather than on a screen only members can open. §3.8
+    if (
+      club.membership_policy !== 'NOT_REQUIRED' &&
+      club.primary_venue_id &&
+      String(membership_name || '').trim()
+    ) {
+      const recorded = actions['venue.upsertMembership'](db, {
+        venueId: club.primary_venue_id,
+        membership_name,
+        membership_no,
+      })
+      if (recorded && typeof recorded.then === 'function') return recorded
+    }
 
     if (club.membership_policy === 'REQUIRED') {
       const membership = club.primary_venue_id
@@ -1361,13 +1376,13 @@ const actions = {
   },
 
   /** The code identifies the club, so the joiner never needs its id. */
-  'club.joinByCode'(db, { code }) {
+  'club.joinByCode'(db, { code, membership_name, membership_no }) {
     const c = String(code || '').trim().toUpperCase()
     if (!c) return fail('BAD_INVITE_CODE')
     // Guard the empty string, which every non-invite club stores.
     const club = Object.values(db.clubs).find((x) => x.invite_code && x.invite_code === c)
     if (!club) return fail('BAD_INVITE_CODE')
-    return actions['club.join'](db, { clubId: club._id })
+    return actions['club.join'](db, { clubId: club._id, membership_name, membership_no })
   },
 
   'club.decide'(db, { clubId, targetOpenid, approve, reason }) {

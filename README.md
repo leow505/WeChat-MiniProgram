@@ -31,11 +31,19 @@ must not break, the traps, and what to do next.
 2. Choose **游客模式 / tourist mode** (or leave the AppID as `touristappid`)
 3. Compile
 
-It runs on local demo data out of the box: two clubs (you own one, with a join request
-waiting), two venues, and nine sessions chosen to cover the awkward states — full with a
+It runs on local demo data out of the box: four clubs (you own one, with a join request
+waiting), three venues, and nine sessions chosen to cover the awkward states — full with a
 waitlist, full with no waitlist, gender-balanced with one female slot left, one closing
 inside the countdown window, plus three finished ones: a split waiting to be published, a
 bill you are collecting on, and a share you owe. Reset under **我的 → 重置本地演示数据**.
+
+Two of the four clubs are ones you are *not* in, so joining is testable. Clubs are not
+discoverable yet, so enter their invite code under **俱乐部 → 用邀请码加入**:
+
+| Code     | Club             | What it demonstrates                                                              |
+| -------- | ---------------- | --------------------------------------------------------------------------------- |
+| `CARD22` | Northside League | Membership **required**: the join asks for the venue membership name and will not proceed without it, then lands as a pending request. That name becomes how you read inside the club, leaving your own display name alone. |
+| `DROPS5` | Westside Drop-in | Membership **requested**: the join offers the same field and admits you anyway if you leave it blank. |
 
 **Why demo data and not cloud?** Cloud Development binds to a real mini program account,
 so `touristappid` has no environment to call. `utils/mock.js` implements the _same action
@@ -48,8 +56,8 @@ offline. It is not a stub of a few endpoints.
 ```bash
 node tests/rules.test.js       # 280 assertions, against both copies of the pure logic
 node tests/bills.test.js       #  90 assertions, the settlement flow and money maths
-node tests/organizer.test.js   #  39 assertions, a live session's rules and club money
-node tests/i18n.test.js        # 391 checks, every label key exists and is rendered
+node tests/organizer.test.js   #  50 assertions, a live session's rules and club money
+node tests/i18n.test.js        # 394 checks, every label key exists and is rendered
 ```
 
 No framework, no install. What each one protects:
@@ -70,7 +78,7 @@ The API and web client have their own suites, which need Node 22 and PostgreSQL:
 
 ```bash
 cd platform && npm install && npm run db:up
-npm test                    # 131 tests, server, against a real database
+npm test                    # 136 tests, server, against a real database
 npm --workspace web test    #  51 tests, web client: helpers, invite page, labels, contrast
 npm run typecheck && npm run build
 ```

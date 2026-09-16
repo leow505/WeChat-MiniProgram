@@ -207,6 +207,44 @@ const detail = (id) => call('event.detail', { eventId: id })
   is('roster fits inside it', ev.roster_count <= 2, true)
   is('and fewer people hold seats than before', ev.roster.length < before.roster.length, true)
 
+  // --- a club that plays on somebody's card asks on the join tap (§3.8) ----
+  // The membership form is only open to members, so a REQUIRED club could not be
+  // joined at all unless the name travels with the join itself.
+  {
+    const as = (actorId) => (action, payload) => mock.dispatch(action, payload, { actorId })
+    const wu = as('u_wu') // 吴静, in neither seeded club and holding no card
+
+    await call('club.update', { clubId: 'c_thu', patch: { membership_policy: 'REQUIRED' } })
+    await refuses('a REQUIRED club refuses a join with no card', 'MEMBERSHIP_REQUIRED',
+      wu('club.join', { clubId: 'c_thu' }))
+
+    res = await wu('club.join', { clubId: 'c_thu', membership_name: '  Wu Jing  ' })
+    is('the name lets the join through', res.status, 'PENDING')
+    const mine = await wu('venue.myMemberships', {})
+    is('the card is on file, trimmed', mine.memberships[0].membership_name, 'Wu Jing')
+    is('against the club primary venue', mine.memberships[0].venue_id, 'v_river')
+    is('and starts unverified', mine.memberships[0].verified_at, null)
+
+    await call('club.decide', { clubId: 'c_thu', targetOpenid: 'u_wu', approve: true })
+    const d = await call('club.detail', { clubId: 'c_thu' })
+    const inClub = d.members.filter((m) => m.openid === 'u_wu')[0]
+    is('inside the club they read as the card', inClub.name, 'Wu Jing')
+    const own = await wu('profile.get', {})
+    is('their own display name is untouched', own.nickname, '吴静')
+
+    // A REQUESTED club takes a name when offered, and admits without one.
+    await call('club.update', { clubId: 'c_thu', patch: { membership_policy: 'REQUESTED' } })
+    const he = as('u_he')
+    res = await he('club.join', { clubId: 'c_thu', membership_name: 'He Qiang' })
+    is('a REQUESTED club still records what it is given', res.status, 'PENDING')
+    const hisCard = await he('venue.myMemberships', {})
+    is('the card is there too', hisCard.memberships[0].membership_name, 'He Qiang')
+    const ma = as('u_ma')
+    res = await ma('club.join', { clubId: 'c_thu' })
+    is('and admits somebody who skipped it', res.status, 'PENDING')
+    is('leaving no card behind', (await ma('venue.myMemberships', {})).memberships.length, 0)
+  }
+
   console.log(`\n${pass} passed, ${fail} failed`)
   process.exit(fail ? 1 : 0)
 })().catch((err) => {
