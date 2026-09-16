@@ -27,11 +27,25 @@ must not break, the traps, and what to do next.
 
 ## Run it locally
 
-1. WeChat DevTools → **Import project** → select this folder
-2. Choose **游客模式 / tourist mode** (or leave the AppID as `touristappid`)
-3. Compile
+The mini program talks to the API under `platform/` by default
+(`API_MODE: 'http'` in `miniprogram/config.js`):
 
-It runs on local demo data out of the box: four clubs (you own one, with a join request
+1. Start the API and its database — see [`platform/README.md`](platform/README.md)
+2. WeChat DevTools → **Import project** → select this folder
+3. 详情 → 本地设置 → tick **不校验合法域名**, so DevTools will call `127.0.0.1`
+4. Compile
+
+A deployed backend replaces step 3 with the domain on the request allowlist in the
+WeChat console.
+
+### Or with no backend at all
+
+Set `API_MODE` to `'mock'` and compile in **游客模式 / tourist mode** (AppID
+`touristappid`). `utils/mock.js` implements the same action surface as the cloud
+function and enforces the same rules, so the whole app works offline on seeded data —
+which is also what the root test suites drive.
+
+The demo data it seeds: four clubs (you own one, with a join request
 waiting), three venues, and nine sessions chosen to cover the awkward states — full with a
 waitlist, full with no waitlist, gender-balanced with one female slot left, one closing
 inside the countdown window, plus three finished ones: a split waiting to be published, a
@@ -50,11 +64,11 @@ discoverable yet, so enter their invite code under **俱乐部 → 用邀请码�
 | `CARD22` | Northside League | Membership **required**: the join asks for the venue membership name and will not proceed without it, then lands as a pending request. That name becomes how you read inside the club, leaving your own display name alone. |
 | `DROPS5` | Westside Drop-in | Membership **requested**: the join offers the same field and admits you anyway if you leave it blank. |
 
-**Why demo data and not cloud?** Cloud Development binds to a real mini program account,
-so `touristappid` has no environment to call. `utils/mock.js` implements the _same action
-surface_ as the cloud function and enforces the same rules — waitlists, gender buckets,
-all-or-nothing party seating, club permissions, the money split all behave correctly
-offline. It is not a stub of a few endpoints.
+**Why a mock rather than cloud in tourist mode?** Cloud Development binds to a real mini
+program account, so `touristappid` has no environment to call. The mock is not a stub of a
+few endpoints: waitlists, gender buckets, all-or-nothing party seating, club permissions
+and the money split all behave correctly offline, which is what makes it worth keeping now
+that the default is a real API.
 
 ## Verify
 
