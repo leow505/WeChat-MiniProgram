@@ -96,7 +96,7 @@ demo organizer.
 ```bash
 npm run verify           # tests + typecheck + build + lint. The bar for a change.
 
-npm run test:server      # 137 — against a real PostgreSQL
+npm run test:server      # 138 — against a real PostgreSQL
 npm run test:web         #  57 — helpers, invite page in jsdom, labels, contrast
 ```
 
@@ -110,6 +110,26 @@ node tests/bills.test.js       # 118  settlement flow and money maths
 node tests/organizer.test.js   #  64  a live session's rules and club money
 node tests/i18n.test.js        # 398  every label exists, and is rendered
 ```
+
+### The WeChat client against this API
+
+The suites either side prove their own half — the root suites drive the mock backend,
+the server suites drive the domain on Postgres — and neither proves the mini program's
+client talks to the real API correctly, which is the half that matters the day the mock
+is switched off. `tools/mp-e2e.cjs` loads `miniprogram/utils/api.js` and friends exactly
+as a page does, points `config` at this server, and walks the whole workflow: profile,
+club, venue, membership, session, guests, waitlist, promotion, courts, the split and
+settlement.
+
+```bash
+npm run dev              # in another shell
+node tools/mp-e2e.cjs    # 49 checks, against the development database
+```
+
+Manual rather than part of `verify`: it needs the server up and it writes to the
+development database (`npm run seed` puts that back). One step reaches into Postgres
+directly — a session has to be over before it can be settled and the clock is the
+server's, so that is the one thing no action offers.
 
 Server tests need a database and will truncate it. They default to
 `postgres://yueqiu:yueqiu@127.0.0.1:5432/yueqiu_test` — `npm run db:test-create`

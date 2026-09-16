@@ -83,7 +83,7 @@ The API and web client have their own suites, which need Node 22 and PostgreSQL:
 
 ```bash
 cd platform && npm install && npm run db:up
-npm test                    # 137 tests, server, against a real database
+npm test                    # 138 tests, server, against a real database
 npm --workspace web test    #  57 tests, web client: helpers, invite page, labels, contrast
 npm run typecheck && npm run build
 ```

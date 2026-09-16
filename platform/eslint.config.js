@@ -63,6 +63,16 @@ export default [
     rules: { '@typescript-eslint/no-explicit-any': 'off' },
   },
   {
+    /**
+     * tools/*.cjs drive the mini program's own modules, which are CommonJS because a
+     * WeChat page has no build step — so require() and __dirname are the point here,
+     * not an oversight, and the file is a script rather than a module.
+     */
+    files: ['tools/**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs', globals: { ...globals.node } },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     // Server code is Node, and its `createApp` is Hono's, not Vue's — the Vue
     // plugin's one-component-per-file rule misreads it.
     files: ['server/**/*.js'],

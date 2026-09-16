@@ -246,6 +246,37 @@ describe('reading lists', () => {
   })
 })
 
+describe('a members-only session', () => {
+  it('refuses a seat to somebody who is not in the club', async () => {
+    const { clubId } = await dispatch(
+      'club.create',
+      { club: { name: 'Closed Club', join_policy: 'APPROVAL' } },
+      ORGANIZER
+    )
+    const { eventId } = await dispatch(
+      'event.create',
+      { event: eventInput({ club_id: clubId, visibility: 'CLUB_ONLY', capacity: 8 }) },
+      ORGANIZER
+    )
+
+    // Reading it was already refused; taking a seat was not. §3.6
+    await expect(dispatch('event.detail', { eventId }, 'u_outsider')).rejects.toMatchObject({
+      code: 'NOT_VISIBLE',
+    })
+    await expect(
+      dispatch('event.join', { eventId, guests: [] }, 'u_outsider')
+    ).rejects.toMatchObject({
+      code: 'NOT_VISIBLE',
+    })
+
+    await dispatch('club.join', { clubId }, 'u_insider')
+    await dispatch('club.decide', { clubId, targetOpenid: 'u_insider', approve: true }, ORGANIZER)
+    expect((await dispatch('event.join', { eventId, guests: [] }, 'u_insider')).state).toBe(
+      'ROSTER'
+    )
+  })
+})
+
 describe('a club page', () => {
   it('is refused to a stranger and to a request still waiting', async () => {
     const { clubId } = await dispatch(

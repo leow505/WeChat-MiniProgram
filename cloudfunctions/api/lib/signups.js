@@ -10,6 +10,7 @@
  * outside the transaction, re-verify inside it, retry on a lost race.
  */
 const rules = require('./rules')
+const naming = require('./naming')
 const { fail } = require('./errors')
 const { db, _, signupId, getOrNull, txGetOrNull } = require('./db')
 
@@ -40,6 +41,25 @@ async function join({ eventId, guests }, openid) {
   return db.runTransaction(async (tx) => {
     const ev = await txGetOrNull(tx, 'events', eventId)
     if (!ev) fail('NOT_FOUND')
+
+    /**
+     * A members-only session is members-only to join, not merely to read. §3.6
+     *
+     * `event.detail` has always refused it to a non-member, and the create form says
+     * outright that a non-member with the share link cannot sign up — but this action
+     * never checked, so anybody holding the session id could take a seat in a club
+     * they had no part in. The mock enforced it; the copy that decides did not.
+     *
+     * A pooled read inside the transaction, which the store joins to the transaction
+     * in progress rather than taking a second connection.
+     */
+    if (ev.club_id) {
+      const member = await getOrNull('club_members', `${ev.club_id}_${openid}`)
+      if (!naming.canSeeClubEvent(ev, member) && ev.creator_openid !== openid) {
+        fail('NOT_VISIBLE')
+      }
+    }
+
     if (!rules.isJoinable(ev, now)) fail('CLOSED')
 
     const party = normalizeGuests(ev, guests)
