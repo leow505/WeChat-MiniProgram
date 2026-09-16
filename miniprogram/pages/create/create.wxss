@@ -1,0 +1,60 @@
+.field-input {
+  color: #16161d;
+}
+.dim {
+  color: #8a8a96;
+}
+/* same role and treatment as .section-title: a heading, not another grey line */
+.group-title {
+  font-size: 23rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  color: #8a8a96;
+  margin: 8rpx 8rpx 16rpx;
+}
+.chips {
+  display: flex;
+  white-space: nowrap;
+}
+.chip {
+  flex: 0 0 auto;
+  padding: 16rpx 28rpx;
+  margin-right: 16rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  color: #5457d6;
+  font-size: 26rpx;
+}
+.hint-line {
+  font-size: 21rpx;
+  color: #8a8a96;
+  margin: 12rpx 8rpx 24rpx;
+}
+/* start time and duration read as one thought, so they share a row */
+.inline-pair {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+.inline-pair picker {
+  flex: 0 0 auto;
+}
+/* capacity is derived from format × courts — a sentence, not another stepper */
+.derived {
+  margin-top: 8rpx;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  background: #eeeefc;
+  color: #55555f;
+  font-size: 23rpx;
+}
+/* the currency stated once, as a unit on the money field */
+.unit {
+  flex: 0 0 auto;
+  margin-right: 10rpx;
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.more-body {
+  margin-top: 12rpx;
+}

@@ -1,0 +1,4 @@
+# Toolchain for the platform (server + web). The WeChat mini program and cloud
+# function are unaffected; the repo root still pins Node 18 for those.
+[tools]
+node = "22"

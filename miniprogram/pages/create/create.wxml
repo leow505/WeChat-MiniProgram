@@ -1,0 +1,241 @@
+<view class="page">
+
+  <!-- Fastest path for a weekly club: reuse a past session, change the date. §12.2 -->
+  <block wx:if="{{recent.length > 0}}">
+    <view class="group-title">{{t.quickStart}}</view>
+    <scroll-view class="chips" scroll-x enable-flex>
+      <view
+        wx:for="{{recent}}"
+        wx:key="_id"
+        class="chip"
+        data-id="{{item._id}}"
+        bindtap="reuse"
+      >{{item.title}}</view>
+    </scroll-view>
+    <view class="hint-line">{{t.tapToReuse}}</view>
+  </block>
+
+  <!-- === essentials: everything else has a sane default ================= -->
+  <view class="card">
+    <view class="field">
+      <text class="field-label">{{t.title}}</text>
+      <input class="field-input" placeholder="{{t.titlePlaceholder}}" value="{{f.title}}" data-k="title" bindinput="onInput" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">{{t.format}}</text>
+      <picker mode="selector" range="{{formatLabels}}" value="{{f.formatIdx}}" bindchange="onFormat">
+        <view class="field-value">{{formatLabels[f.formatIdx]}} ›</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="field-label">{{t.date}}</text>
+      <picker mode="date" value="{{f.date}}" start="{{today}}" bindchange="onDate">
+        <view class="field-value">{{f.date}} ›</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="field-label">{{t.startTime}}</text>
+      <view class="inline-pair">
+        <picker mode="time" value="{{f.time}}" bindchange="onTime">
+          <view class="field-value">{{f.time}}</view>
+        </picker>
+        <picker mode="selector" range="{{durationLabels}}" value="{{f.durationIdx}}" bindchange="onDuration">
+          <view class="field-value dim">· {{durationLabels[f.durationIdx]}} ›</view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- Before 场馆 on purpose: choosing a club prefills the venue it actually
+         plays at most, so the field below is usually already right. -->
+    <view wx:if="{{clubOptions.length > 1}}" class="field">
+      <text class="field-label">{{t.hostAsClub}}</text>
+      <picker mode="selector" range="{{clubLabels}}" value="{{f.clubIdx}}" bindchange="onClub">
+        <view class="field-value">{{clubLabels[f.clubIdx]}} ›</view>
+      </picker>
+    </view>
+
+    <!-- venue: pick a saved club venue when there is one, else type it -->
+    <view wx:if="{{venueLabels.length > 1}}" class="field">
+      <text class="field-label">{{t.venue}}</text>
+      <picker mode="selector" range="{{venueLabels}}" value="{{f.venueIdx}}" bindchange="onVenue">
+        <view class="field-value">{{venueLabels[f.venueIdx]}} ›</view>
+      </picker>
+    </view>
+    <view wx:if="{{venueLabels.length <= 1 || f.venueIdx === 0}}" class="field">
+      <text class="field-label">{{venueLabels.length > 1 ? '' : t.venue}}</text>
+      <input class="field-input" placeholder="{{t.venuePlaceholder}}" value="{{f.venueName}}" data-k="venueName" bindinput="onInput" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">{{t.courtCount}}</text>
+      <view class="stepper">
+        <view class="stepper-btn {{f.courtCount <= 1 ? 'is-disabled' : ''}}" data-k="courtCount" data-d="-1" bindtap="step">−</view>
+        <text class="stepper-value">{{f.courtCount}}</text>
+        <view class="stepper-btn" data-k="courtCount" data-d="1" bindtap="step">+</view>
+      </view>
+    </view>
+
+    <!-- capacity is derived, shown as a sentence rather than another control -->
+    <view class="derived">{{playersSummary}}</view>
+  </view>
+
+  <!-- === everything else, collapsed ===================================== -->
+  <view class="card">
+    <view class="disclosure" bindtap="toggleMore">
+      <text class="disclosure-label">{{t.moreSettings}}</text>
+      <text class="chev {{showMore ? 'is-up' : 'is-down'}}">›</text>
+    </view>
+
+    <!--
+      Every option here is one .setting block: label, its own explanation, then its
+      control. Two of these used to be labelled with .section-title — a group heading,
+      smaller and greyer than the .field-label on the stepper rows beside them — so the
+      label of the widest control on screen read as fine print, and the single hint that
+      covered both of them sat under the second one as if it belonged only to that.
+
+      The notes were already written and had never been rendered anywhere.
+    -->
+    <view wx:if="{{showMore}}" class="more-body">
+
+      <view wx:if="{{canClubOnly}}" class="setting">
+        <text class="setting-label">{{t.visibility}}</text>
+        <text class="setting-note">{{t.visibilityNote}}</text>
+        <view class="seg">
+          <view class="seg-item {{f.visibility === 'PUBLIC' ? 'is-active' : ''}}" data-v="PUBLIC" bindtap="onVisibility">{{t.visPublic}}</view>
+          <view class="seg-item {{f.visibility === 'CLUB_ONLY' ? 'is-active' : ''}}" data-v="CLUB_ONLY" bindtap="onVisibility">{{t.visClubOnly}}</view>
+        </view>
+      </view>
+
+      <!-- gender-balanced formats need the split editable -->
+      <block wx:if="{{balanced}}">
+        <view class="setting">
+          <view class="setting-head">
+            <text class="setting-label">{{t.maleSlots}}</text>
+            <view class="stepper">
+              <view class="stepper-btn {{f.maleSlots <= 0 ? 'is-disabled' : ''}}" data-k="maleSlots" data-d="-1" bindtap="step">−</view>
+              <text class="stepper-value">{{f.maleSlots}}</text>
+              <view class="stepper-btn" data-k="maleSlots" data-d="1" bindtap="step">+</view>
+            </view>
+          </view>
+        </view>
+        <view class="setting">
+          <view class="setting-head">
+            <text class="setting-label">{{t.femaleSlots}}</text>
+            <view class="stepper">
+              <view class="stepper-btn {{f.femaleSlots <= 0 ? 'is-disabled' : ''}}" data-k="femaleSlots" data-d="-1" bindtap="step">−</view>
+              <text class="stepper-value">{{f.femaleSlots}}</text>
+              <view class="stepper-btn" data-k="femaleSlots" data-d="1" bindtap="step">+</view>
+            </view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.capacityLabel}}</text>
+          <view class="stepper">
+            <view class="stepper-btn {{f.capacity <= 2 ? 'is-disabled' : ''}}" data-k="capacity" data-d="-1" bindtap="step">−</view>
+            <text class="stepper-value">{{f.capacity}}</text>
+            <view class="stepper-btn" data-k="capacity" data-d="1" bindtap="step">+</view>
+          </view>
+        </view>
+        <!-- says why there's a stepper here at all, when the format already derived it -->
+        <text class="setting-note">{{t.courtHint}}</text>
+      </view>
+
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.minPlayers}}</text>
+          <view class="stepper">
+            <view class="stepper-btn {{f.minPlayers <= 0 ? 'is-disabled' : ''}}" data-k="minPlayers" data-d="-1" bindtap="step">−</view>
+            <text class="stepper-value">{{f.minPlayers}}</text>
+            <view class="stepper-btn" data-k="minPlayers" data-d="1" bindtap="step">+</view>
+          </view>
+        </view>
+        <text class="setting-note">{{t.minPlayersHint}}</text>
+      </view>
+
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.guestsPerMember}}</text>
+          <view class="stepper">
+            <view class="stepper-btn {{f.maxGuests <= 0 ? 'is-disabled' : ''}}" data-k="maxGuests" data-d="-1" bindtap="step">−</view>
+            <text class="stepper-value">{{f.maxGuests}}</text>
+            <view class="stepper-btn {{f.maxGuests >= 3 ? 'is-disabled' : ''}}" data-k="maxGuests" data-d="1" bindtap="step">+</view>
+          </view>
+        </view>
+        <text class="setting-note">{{t.guestsHint}}</text>
+      </view>
+
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.costPerPerson}}</text>
+          <text class="unit">{{currency}}</text>
+          <input class="field-input" type="digit" placeholder="12.00" value="{{f.cost}}" data-k="cost" bindinput="onInput" />
+        </view>
+        <text class="setting-note">{{t.costHint}}</text>
+      </view>
+
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.level}}</text>
+          <picker mode="selector" range="{{levelLabels}}" value="{{f.levelIdx}}" bindchange="onLevel">
+            <view class="field-value">{{levelLabels[f.levelIdx]}} ›</view>
+          </picker>
+        </view>
+      </view>
+
+      <!-- §3.1: the deadline and the full-behaviour are two independent settings, and
+           conflating them was the original spec's one contradiction — so each gets its
+           own label and its own explanation rather than sharing a hint. -->
+      <view class="setting">
+        <text class="setting-label">{{t.joinDeadline}}</text>
+        <text class="setting-note">{{t.joinDeadlineNote}}</text>
+        <view class="seg">
+          <view class="seg-item {{f.deadlineRule === 'AT_EVENT_START' ? 'is-active' : ''}}" data-v="AT_EVENT_START" bindtap="onDeadlineRule">{{t.atEventStart}}</view>
+          <view class="seg-item {{f.deadlineRule === 'AT_TIME' ? 'is-active' : ''}}" data-v="AT_TIME" bindtap="onDeadlineRule">{{t.customTime}}</view>
+        </view>
+        <!-- inset, because these exist only as a consequence of the choice above -->
+        <view wx:if="{{f.deadlineRule === 'AT_TIME'}}" class="sub-fields">
+          <view class="field">
+            <text class="field-label">{{t.deadlineDate}}</text>
+            <picker mode="date" value="{{f.deadlineDate}}" bindchange="onDeadlineDate">
+              <view class="field-value">{{f.deadlineDate}} ›</view>
+            </picker>
+          </view>
+          <view class="field">
+            <text class="field-label">{{t.deadlineTime}}</text>
+            <picker mode="time" value="{{f.deadlineTime}}" bindchange="onDeadlineTime">
+              <view class="field-value">{{f.deadlineTime}} ›</view>
+            </picker>
+          </view>
+        </view>
+      </view>
+
+      <view class="setting">
+        <text class="setting-label">{{t.whenFull}}</text>
+        <text class="setting-note">{{t.whenFullNote}}</text>
+        <view class="seg">
+          <view class="seg-item {{f.onFull === 'WAITLIST' ? 'is-active' : ''}}" data-v="WAITLIST" bindtap="onOnFull">{{t.onFullWaitlist}}</view>
+          <view class="seg-item {{f.onFull === 'CLOSE' ? 'is-active' : ''}}" data-v="CLOSE" bindtap="onOnFull">{{t.onFullClose}}</view>
+        </view>
+      </view>
+
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.stopWithdrawBefore}}</text>
+          <picker mode="selector" range="{{withdrawLabels}}" value="{{f.withdrawIdx}}" bindchange="onWithdraw">
+            <view class="field-value">{{withdrawLabels[f.withdrawIdx]}} ›</view>
+          </picker>
+        </view>
+        <text class="setting-note">{{t.withdrawNote}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="cta-bar">
+  <button class="btn {{submitting ? 'is-disabled' : ''}}" bindtap="submit">{{t.post}}</button>
+</view>

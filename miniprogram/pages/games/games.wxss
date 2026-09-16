@@ -1,0 +1,165 @@
+/*
+  The segment bar is fixed rather than scrolled away with the list: its whole job is
+  that the other list stays one tap away no matter how far down you are.
+
+  The soft bottom shadow is what stops a card scrolling underneath from looking
+  clipped, since the bar is the same colour as the page.
+*/
+.segbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 10;
+  padding: 14rpx 24rpx 12rpx;
+  background: #f4f4f7;
+  box-shadow: 0 6rpx 12rpx rgba(244, 244, 247, 0.95);
+}
+
+/*
+  A recessed track holding both halves.
+
+  The first version gave the selected half a white pill and left the other as bare
+  text on the page background — so the unselected side read as a stray label rather
+  than the other half of a control, and nothing indicated it could be tapped. The
+  track is the affordance: darker than the page, both halves inside it, one of them
+  lifted out in white.
+*/
+.segtrack {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 5rpx;
+  border-radius: 18rpx;
+  background: #e6e6ee;
+}
+.segtab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  flex: 1;
+  height: 66rpx;
+  border-radius: 14rpx;
+  background: transparent;
+  transition: background-color 0.18s ease;
+}
+/* lifted out of the track — the shadow is what makes it read as on top of it */
+.segtab.is-active {
+  background: #ffffff;
+  box-shadow: 0 2rpx 6rpx rgba(22, 22, 29, 0.1);
+}
+.segtab-label {
+  font-size: 27rpx;
+  color: #55555f;
+}
+.segtab.is-active .segtab-label {
+  color: #16161d;
+  font-weight: 600;
+}
+/* count sits inside its half, so it can't be read as belonging to the other one */
+.segtab-count {
+  min-width: 32rpx;
+  padding: 0 8rpx;
+  border-radius: 16rpx;
+  background: rgba(22, 22, 29, 0.08);
+  color: #55555f;
+  font-size: 21rpx;
+  line-height: 32rpx;
+  text-align: center;
+}
+.segtab.is-active .segtab-count {
+  background: #eeeefc;
+  color: #5457d6;
+  font-weight: 600;
+}
+/* clears the fixed bar above */
+.page-tabbed {
+  padding-top: 116rpx;
+}
+
+/* same role and treatment as .section-title: a heading, not another grey line */
+.group-title {
+  font-size: 23rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  color: #8a8a96;
+  margin: 16rpx 8rpx 16rpx;
+}
+/* carries a rotating chevron now, so it has to lay its children out */
+.group-title.tappable {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #55555f;
+}
+/* sits above the cards it filters */
+.filterbar {
+  display: flex;
+  white-space: nowrap;
+  margin: 0 0 20rpx;
+}
+/* grey fill, not white — white would read as another small card among the cards */
+.fchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+  flex: 0 0 auto;
+  height: 60rpx;
+  padding: 0 24rpx;
+  margin-right: 14rpx;
+  border-radius: 30rpx;
+  background: #f0f0f5;
+}
+.fchip-label {
+  font-size: 25rpx;
+  color: #55555f;
+}
+.fchip-count {
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.fchip.is-active {
+  background: #5457d6;
+}
+.fchip.is-active .fchip-label {
+  color: #ffffff;
+  font-weight: 600;
+}
+.fchip.is-active .fchip-count {
+  color: rgba(255, 255, 255, 0.75);
+}
+/* past sessions are reference: a plain row, not a full card */
+.past-row {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 28rpx;
+  margin-bottom: 16rpx;
+}
+.past-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+.past-title {
+  flex: 1;
+  font-size: 27rpx;
+  color: #55555f;
+}
+.past-sub {
+  font-size: 21rpx;
+  color: #8a8a96;
+  margin-top: 6rpx;
+}
+.empty-cta {
+  display: inline-block;
+  width: auto;
+  padding: 0 40rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  margin-top: 28rpx;
+  font-size: 27rpx;
+}

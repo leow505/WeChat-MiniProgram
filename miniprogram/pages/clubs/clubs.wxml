@@ -1,0 +1,83 @@
+<view class="page">
+
+  <!-- content first: the clubs you're in are why you opened this page -->
+  <view class="group-title">{{t.clubsMine}}</view>
+  <view wx:if="{{!loading && joined.length === 0}}" class="empty">{{t.noClubsHint}}</view>
+
+  <view
+    wx:for="{{joined}}"
+    wx:key="_id"
+    class="ccard"
+    data-id="{{item._id}}"
+    bindtap="openClub"
+  >
+    <view class="ccard-main">
+      <view class="ccard-head">
+        <text class="ccard-name">{{item.name}}</text>
+        <!-- only badges that mean something: a role worth knowing, or a status.
+             'member' on every card was noise. -->
+        <text wx:if="{{item.pending}}" class="tag tag-waiting">{{t.pendingApproval}}</text>
+        <text wx:elif="{{item.role_label}}" class="tag tag-mine">{{item.role_label}}</text>
+      </view>
+      <text wx:if="{{item.description}}" class="ccard-desc">{{item.description}}</text>
+      <view class="ccard-meta">
+        <text>{{item.member_count}} {{t.membersTitle}}</text>
+        <text class="sep">·</text>
+        <text>{{item.policy_label}}</text>
+      </view>
+      <!-- the actionable bit for an admin -->
+      <view wx:if="{{item.pending_text}}" class="pending-line">{{item.pending_text}}</view>
+    </view>
+    <text class="chev">›</text>
+  </view>
+
+  <!-- actions as menu rows: a chevron reads as tappable in a way a grey pill did not -->
+  <view class="group-title">{{t.clubActions}}</view>
+  <view class="card">
+    <view class="action-row" bindtap="toggleCreate">
+      <view class="action-icon">＋</view>
+      <view class="action-main">
+        <text class="action-label">{{t.createClub}}</text>
+        <text class="action-sub">{{t.createClubSub}}</text>
+      </view>
+      <text class="chev {{creating ? 'is-up' : 'is-down'}}">›</text>
+    </view>
+
+    <view wx:if="{{creating}}" class="inset">
+      <view class="field">
+        <text class="field-label">{{t.clubName}}</text>
+        <input class="field-input" value="{{form.name}}" data-k="name" bindinput="onFormInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">{{t.clubDesc}}</text>
+        <input class="field-input" placeholder="{{t.optional}}" value="{{form.description}}" data-k="description" bindinput="onFormInput" />
+      </view>
+      <view class="section-title">{{t.joinPolicy}}</view>
+      <view class="seg seg-vertical">
+        <view
+          wx:for="{{policyOptions}}"
+          wx:key="value"
+          class="seg-item {{form.join_policy === item.value ? 'is-active' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="onPolicy"
+        >{{item.label}}</view>
+      </view>
+      <button class="btn" bindtap="submitCreate">{{t.createClub}}</button>
+    </view>
+
+    <view class="action-row" bindtap="toggleJoinByCode">
+      <view class="action-icon">#</view>
+      <view class="action-main">
+        <text class="action-label">{{t.joinByCode}}</text>
+        <text class="action-sub">{{t.joinByCodeSub}}</text>
+      </view>
+      <text class="chev {{joiningByCode ? 'is-up' : 'is-down'}}">›</text>
+    </view>
+
+    <view wx:if="{{joiningByCode}}" class="inset">
+      <input class="code-input" placeholder="{{t.inviteCodePlaceholder}}" value="{{code}}" maxlength="6" bindinput="onCode" />
+      <button class="btn" bindtap="submitCode">{{t.joinClub}}</button>
+    </view>
+  </view>
+
+</view>

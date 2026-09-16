@@ -1,0 +1,40 @@
+{
+  "pages": [
+    "pages/games/games",
+    "pages/clubs/clubs",
+    "pages/me/me",
+    "pages/event/event",
+    "pages/create/create",
+    "pages/profile/profile",
+    "pages/club/club",
+    "pages/manage/manage",
+    "pages/bill/bill",
+    "pages/hosting/hosting"
+  ],
+  "window": {
+    "navigationBarTitleText": "约球",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f4f5f7"
+  },
+  "tabBar": {
+    "color": "#8a8f99",
+    "selectedColor": "#1668dc",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/games/games",
+        "text": "球局"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的"
+      }
+    ],
+    "custom": true
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

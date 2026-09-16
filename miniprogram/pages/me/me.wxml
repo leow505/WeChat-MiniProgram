@@ -1,0 +1,78 @@
+<view class="page">
+
+  <!-- identity summary only; editing lives on the profile page so this tab stays a
+       menu rather than a form -->
+  <view class="card profile-row" bindtap="goProfile">
+    <image wx:if="{{profile.avatar_url}}" class="avatar" src="{{profile.avatar_url}}" mode="aspectFill" />
+    <view wx:else class="avatar avatar-empty">+</view>
+    <view class="profile-main">
+      <text class="name">{{profile.nickname || t.nicknamePlaceholder}}</text>
+      <text class="dim small">{{genderLabel}}</text>
+    </view>
+    <text class="chev">›</text>
+  </view>
+
+  <view wx:if="{{profile.needs_setup}}" class="notice">{{t.setupNudge}}</view>
+
+  <!--
+    What the tab-bar dot is counting, itemised. Before this the dot appeared with no
+    explanation anywhere on the page it marked, so the only way to find its cause was to
+    open 我的俱乐部 and hunt for the club that had a request waiting. Because this list
+    names every one of them, the rows below need no counts of their own.
+  -->
+  <view wx:if="{{todo.length}}" class="card">
+    <view class="section-title">{{t.needsYou}} · {{todo.length}}</view>
+    <view
+      wx:for="{{todo}}"
+      wx:key="key"
+      class="todo-row"
+      data-url="{{item.url}}"
+      bindtap="openTodo"
+    >
+      <view class="todo-mark k-{{item.kind}}"></view>
+      <view class="todo-main">
+        <text class="todo-text">{{item.text}}</text>
+        <text wx:if="{{item.detail}}" class="todo-detail">{{item.detail}}</text>
+      </view>
+      <text class="todo-action">{{item.action}}</text>
+      <text class="chev">›</text>
+    </view>
+    <view class="field-hint">{{t.needsYouHint}}</view>
+  </view>
+
+  <!--
+    Menu rows, not lists. 待处理 above already itemises anything waiting, so these two
+    only carry a count and a way in — which keeps this tab a menu rather than letting an
+    unbounded list grow inside it.
+
+    Each names what you control behind it. A row reading just "球局管理 4 ›" says where it
+    goes but not what it is for, and these are the two screens where an organizer actually
+    changes things.
+  -->
+  <view class="card">
+    <view wx:if="{{hostingCount}}" class="menu-row" bindtap="goHosting">
+      <view class="menu-main">
+        <text class="menu-label">{{t.hostingTitle}}</text>
+        <text class="menu-sub">{{t.hostingSub}}</text>
+      </view>
+      <view class="right">
+        <text class="dim">{{hostingCount}}</text><text class="chev">›</text>
+      </view>
+    </view>
+    <view class="menu-row" bindtap="goClubs">
+      <view class="menu-main">
+        <text class="menu-label">{{t.myClubs}}</text>
+        <text class="menu-sub">{{t.myClubsSub}}</text>
+      </view>
+      <view class="right">
+        <text class="dim">{{clubCount}}</text><text class="chev">›</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{isMock}}" class="card">
+    <view class="section-title">{{t.devTools}}</view>
+    <view class="btn btn-secondary" bindtap="resetMock">{{t.resetMock}}</view>
+    <view class="field-hint" style="padding-top: 16rpx">{{t.mockNote}}</view>
+  </view>
+</view>

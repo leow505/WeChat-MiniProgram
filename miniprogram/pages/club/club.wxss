@@ -1,0 +1,76 @@
+.row-between {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.row-between .card-title {
+  flex: 1;
+  margin-right: 16rpx;
+}
+.dim {
+  color: #8a8a96;
+}
+.small {
+  font-size: 21rpx;
+}
+.badge {
+  display: inline-block;
+  min-width: 32rpx;
+  margin-left: 8rpx;
+  padding: 0 8rpx;
+  border-radius: 16rpx;
+  background: #d64545;
+  color: #ffffff;
+  font-size: 21rpx;
+  line-height: 32rpx;
+  text-align: center;
+}
+.member-row,
+.venue-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.member-row:last-child,
+.venue-row:last-child {
+  border-bottom: none;
+}
+.member-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.member-name {
+  font-size: 27rpx;
+}
+.mini-btn {
+  flex: 0 0 auto;
+  padding: 0 22rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 10rpx;
+  background: #5457d6;
+  color: #ffffff;
+  font-size: 24rpx;
+}
+.mini-btn.ghost {
+  background: #f0f0f5;
+  color: #55555f;
+}
+.seg-vertical {
+  flex-direction: column;
+  gap: 4rpx;
+}
+.code {
+  font-size: 34rpx;
+  font-weight: 600;
+  letter-spacing: 6rpx;
+  color: #5457d6;
+}
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}

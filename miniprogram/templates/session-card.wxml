@@ -1,0 +1,68 @@
+<!--
+  One session card, shared by the games list and the club page.
+
+  Both surfaces used to duplicate this markup, which is how the club badge ended up
+  bolted onto the 玩法 row on one of them and not the other. Fields come from
+  utils/present.js eventCard().
+
+  Four levels, and nothing shares a level with anything else:
+
+    1  the day numeral and the title       ink, 600      — the two anchors
+    2  clock and venue                     ink-2, 400    — the facts you scan
+    3  the capacity block                  its own inset — the "can I get in" answer
+    4  chips and footer                    ink-3, small  — filtering and fine print
+
+  The previous version had ten text styles inside 26rpx of each other, four of them
+  ink at 600 weight, so nothing was obviously more important than anything else.
+  Capacity is a tinted block rather than another line of text because the distinction
+  that reads fastest is shape, not a two-point size difference.
+-->
+<template name="sessionCard">
+  <view class="scard {{unavailable ? 'is-unavailable' : ''}}" data-id="{{_id}}" bindtap="openEvent">
+
+    <!--
+      Status rail. Redundant with the badge beside it on purpose: the words carry the
+      meaning, and the colour just makes a scrolling list scannable without reading
+      every badge. This is not the club-identity stripe that was removed — that one
+      encoded "members only" with nothing on screen saying so.
+    -->
+    <view class="scard-rail r-{{badge_class}}"></view>
+
+    <view class="scard-top">
+      <!-- calendar block: a chronological list is scanned by date, so anchor it -->
+      <view class="datebox">
+        <text class="d-month">{{date_month}}</text>
+        <text class="d-day">{{date_day}}</text>
+        <text class="d-week">{{date_weekday}}</text>
+      </view>
+
+      <view class="scard-main">
+        <view class="scard-head">
+          <text class="scard-title">{{title}}</text>
+          <text class="tag tag-{{badge_class}}">{{badge_text}}</text>
+        </view>
+        <text class="scard-when">{{when_where}}</text>
+      </view>
+    </view>
+
+    <!-- the answer to "can I get in", as a block so it can't be mistaken for prose -->
+    <view class="capbox {{cap_state}}">
+      <text class="cap-lead {{cap_wide ? 'is-wide' : ''}}">{{cap_lead}}</text>
+      <view class="meter">
+        <view class="meter-fill {{is_full ? 'is-full' : ''}}" style="width: {{meter_pct}}%"></view>
+      </view>
+      <text class="cap-left">{{seats_left_text}}</text>
+    </view>
+
+    <!-- format, level, cost as separate tokens rather than one run-on line -->
+    <view wx:if="{{chips.length}}" class="scard-chips">
+      <text wx:for="{{chips}}" wx:for-item="chip" wx:key="key" class="chip chip-{{chip.key}}">{{chip.label}}</text>
+    </view>
+
+    <!-- who can join, in words: no colour code to learn -->
+    <view wx:if="{{footer_left || footer_right}}" class="scard-foot">
+      <text class="foot-l">{{footer_left}}</text>
+      <text class="foot-r">{{footer_right}}</text>
+    </view>
+  </view>
+</template>

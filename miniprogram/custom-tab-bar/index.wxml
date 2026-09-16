@@ -1,0 +1,32 @@
+<view class="tabbar">
+  <!-- tap boxes hug their content rather than filling half the screen each -->
+  <view class="item" data-index="0" bindtap="onTap">
+    <view class="hit {{selected === 0 ? 'is-active' : ''}}">
+      <view class="ico ico-racket">
+        <view class="head"></view>
+        <view class="grip"></view>
+      </view>
+      <text class="label">{{labels[0]}}</text>
+    </view>
+  </view>
+
+  <!-- raised centre action: the most reachable spot in the app, and it can't
+       overlap list content the way a floating button does -->
+  <view class="center" bindtap="onCreate">
+    <view class="fabtn">
+      <view class="plus-h"></view>
+      <view class="plus-v"></view>
+    </view>
+  </view>
+
+  <view class="item" data-index="1" bindtap="onTap">
+    <view class="hit {{selected === 1 ? 'is-active' : ''}}">
+      <view class="ico ico-person">
+        <view class="head"></view>
+        <view class="body"></view>
+      </view>
+      <text class="label">{{labels[1]}}</text>
+      <view wx:if="{{dot > 0}}" class="dot">{{dot}}</view>
+    </view>
+  </view>
+</view>

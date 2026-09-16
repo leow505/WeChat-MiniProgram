@@ -1,0 +1,40 @@
+{
+  "name": "@yueqiu/platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Platform-neutral API and web client for \u7ea6\u7403 (badminton group play).",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm --workspace server run dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "test": "npm --workspace server run test && npm --workspace web run test",
+    "test:server": "npm --workspace server run test",
+    "test:web": "npm --workspace web run test",
+    "typecheck": "npm --workspace web run typecheck",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "verify": "npm test && npm run typecheck && npm run build && npm run lint",
+    "shots": "node web/tools/screenshot.mjs",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:test-create": "docker exec yueqiu-pg psql -U yueqiu -d postgres -c 'CREATE DATABASE yueqiu_test OWNER yueqiu;' || echo 'yueqiu_test already exists'",
+    "migrate": "npm --workspace server run migrate",
+    "seed": "npm --workspace server run seed"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.13.0",
+    "eslint-plugin-vue": "^9.33.0",
+    "globals": "^17.12.0",
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}

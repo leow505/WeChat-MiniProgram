@@ -1,0 +1,181 @@
+/* Colour values are literal, not var() — see the note at the top of app.wxss. */
+.dim {
+  color: #8a8a96;
+}
+.small {
+  font-size: 21rpx;
+}
+.row-between {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.row-between .card-title {
+  flex: 1;
+  margin-right: 16rpx;
+}
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+.mini-btn {
+  flex: 0 0 auto;
+  padding: 0 20rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 10rpx;
+  background: #5457d6;
+  color: #ffffff;
+  font-size: 22rpx;
+}
+.mini-btn.ghost {
+  background: #f0f0f5;
+  color: #55555f;
+}
+
+/* The .tag-bill-* and .tag-share-* variants live in app.wxss with the rest of the
+   tag palette, because the games list needs the share colours too. */
+
+/* the player's own share: the page's one number, so it gets the focal treatment */
+.money-row {
+  display: flex;
+  align-items: baseline;
+  gap: 20rpx;
+  margin: 8rpx 0 4rpx;
+}
+.money-big {
+  font-size: 60rpx;
+  font-weight: 600;
+  line-height: 1.1;
+}
+/* the currency, once, as a quiet unit beside the one number that matters */
+.money-cur {
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.money-tags {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+.due-line {
+  display: block;
+  font-size: 23rpx;
+  color: #55555f;
+}
+.claimed-line {
+  margin-top: 20rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 12rpx;
+  background: #eeeefc;
+  color: #5457d6;
+  font-size: 23rpx;
+}
+
+/* the settlement instruction — tappable to copy, since it's usually an address */
+.pay-note {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  background: #f8f8fb;
+}
+.pay-note .k {
+  flex: 0 0 auto;
+  color: #8a8a96;
+  font-size: 23rpx;
+}
+.pay-note .v {
+  flex: 1;
+  font-size: 27rpx;
+}
+/* same job on the total field: a unit, not a prefix on every amount */
+.unit {
+  flex: 0 0 auto;
+  margin-right: 10rpx;
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.pay-copy {
+  flex: 0 0 auto;
+  color: #5457d6;
+  font-size: 23rpx;
+}
+
+/* one row per payer, before and after publication */
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.share-row:last-child {
+  border-bottom: none;
+}
+.share-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.share-name {
+  font-size: 27rpx;
+  max-width: 220rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.amount {
+  flex: 0 0 auto;
+  font-size: 27rpx;
+  font-variant-numeric: tabular-nums;
+}
+.guest-mark {
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.claim-mark {
+  font-size: 21rpx;
+  color: #5457d6;
+}
+
+/* the derived per-share figure, the one number the organizer checks before posting */
+.split-box {
+  margin: 16rpx 0 4rpx;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  background: #eeeefc;
+}
+.split-main {
+  display: block;
+  font-size: 33rpx;
+  font-weight: 600;
+  color: #16161d;
+}
+.split-sub {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  color: #55555f;
+  line-height: 1.5;
+}
+
+.progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 12rpx;
+  background: #fdf2e4;
+  color: #c76a10;
+  font-size: 27rpx;
+}
+.progress.is-done {
+  background: #e4f7ef;
+  color: #0a9c6b;
+}

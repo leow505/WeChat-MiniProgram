@@ -1,0 +1,209 @@
+<import src="../../templates/session-card.wxml" />
+
+<view wx:if="{{d}}" class="page">
+
+  <!-- header ------------------------------------------------------------ -->
+  <view class="card">
+    <view class="row-between">
+      <text class="card-title">{{d.club.name}}</text>
+      <text wx:if="{{d.my_role}}" class="tag tag-mine">{{t['role' + d.my_role]}}</text>
+      <text wx:elif="{{d.my_status === 'PENDING'}}" class="tag">{{t.pendingApproval}}</text>
+    </view>
+    <view wx:if="{{d.club.description}}" class="card-row"><text class="dim">{{d.club.description}}</text></view>
+    <view class="card-row">
+      <text class="dim">{{d.club.member_count}} {{t.membersTitle}} · {{d.policy_label}}</text>
+    </view>
+
+    <view wx:if="{{!d.is_member && d.my_status !== 'PENDING'}}" class="btn" style="margin-top:20rpx" bindtap="join">
+      {{d.club.join_policy === 'OPEN' ? t.joinClubOpen : t.joinClub}}
+    </view>
+  </view>
+
+  <!-- prompt for a membership name where the club asks for one. §3.8 -->
+  <view wx:if="{{d.is_member && d.needs_membership}}" class="notice">{{t.membershipWhy}}</view>
+
+  <!-- tabs -------------------------------------------------------------- -->
+  <view class="seg">
+    <view class="seg-item {{tab === 'games' ? 'is-active' : ''}}" data-tab="games" bindtap="switchTab">{{t.clubUpcoming}}</view>
+    <view class="seg-item {{tab === 'members' ? 'is-active' : ''}}" data-tab="members" bindtap="switchTab">
+      {{t.membersTitle}}<text wx:if="{{d.pending_count > 0}}" class="badge">{{d.pending_count}}</text>
+    </view>
+    <view class="seg-item {{tab === 'more' ? 'is-active' : ''}}" data-tab="more" bindtap="switchTab">{{t.clubSettings}}</view>
+  </view>
+
+  <!-- === games ======================================================== -->
+  <block wx:if="{{tab === 'games'}}">
+    <view wx:if="{{d.upcoming.length === 0}}" class="empty">{{t.emptyGames}}</view>
+    <template wx:for="{{d.upcoming}}" wx:key="_id" is="sessionCard" data="{{...item, t: t}}" />
+    <view wx:if="{{d.is_member}}" class="btn btn-secondary" bindtap="createEvent">{{t.newGame}}</view>
+  </block>
+
+  <!-- === members ====================================================== -->
+  <block wx:if="{{tab === 'members'}}">
+    <!-- pending requests, admin only -->
+    <view wx:if="{{d.is_admin && d.pending.length > 0}}" class="card">
+      <view class="section-title">{{t.pendingTitle}} {{d.pending.length}}</view>
+      <view wx:for="{{d.pending}}" wx:key="openid" class="member-row">
+        <view class="person-avatar">{{item.initial}}</view>
+        <view class="member-main">
+          <view class="name-line">
+            <text class="member-name">{{item.name}}</text>
+            <text wx:if="{{item.gender_glyph}}" class="gender {{item.gender_class}}">{{item.gender_glyph}}</text>
+          </view>
+          <text wx:if="{{item.has_membership}}" class="dim small">{{t.membershipName}} ✓</text>
+        </view>
+        <view class="mini-btn" data-openid="{{item.openid}}" bindtap="approve">{{t.approve}}</view>
+        <view class="mini-btn ghost" data-openid="{{item.openid}}" bindtap="reject">{{t.reject}}</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">{{t.membersTitle}} {{d.members.length}}</view>
+      <view
+        wx:for="{{d.members}}"
+        wx:key="openid"
+        class="member-row"
+        data-openid="{{item.openid}}"
+        data-role="{{item.role}}"
+        data-name="{{item.name}}"
+        bindtap="memberActions"
+      >
+        <view class="person-avatar">{{item.initial}}</view>
+        <view class="member-main">
+          <view class="name-line">
+            <text class="member-name">{{item.name}}</text>
+            <text wx:if="{{item.gender_glyph}}" class="gender {{item.gender_class}}">{{item.gender_glyph}}</text>
+          </view>
+          <text wx:if="{{item.has_membership}}" class="dim small">
+            {{item.membership_verified ? t.membershipVerified : t.membershipUnverified}}
+          </text>
+        </view>
+        <text wx:if="{{!item.is_plain}}" class="tag">{{item.role_label}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{d.is_member && !d.is_owner}}" class="btn btn-danger" bindtap="leave">{{t.leaveClub}}</view>
+  </block>
+
+  <!-- === settings / venues / my membership ============================ -->
+  <block wx:if="{{tab === 'more'}}">
+
+    <!-- my membership name at the club's main venue. §3.8 -->
+    <view wx:if="{{d.is_member && d.club.primary_venue_id}}" class="card">
+      <view class="section-title">{{t.myMembership}}</view>
+      <view class="field">
+        <text class="field-label">{{t.membershipName}}</text>
+        <input class="field-input" placeholder="{{t.membershipNamePlaceholder}}" value="{{mName}}" bindinput="onMName" />
+      </view>
+      <view class="field">
+        <text class="field-label">{{t.membershipNo}}</text>
+        <input class="field-input" placeholder="{{t.optional}}" value="{{mNo}}" bindinput="onMNo" />
+      </view>
+      <view class="field-hint">{{t.membershipPublicNote}}</view>
+      <view class="btn btn-secondary" bindtap="saveMembership">{{t.saveMembership}}</view>
+    </view>
+
+    <!-- venues -->
+    <view class="card">
+      <view class="section-title">{{t.venuesTitle}}</view>
+      <view wx:for="{{d.venues}}" wx:key="_id" class="venue-row">
+        <view class="member-main">
+          <text class="member-name">{{item.name}}</text>
+          <text class="dim small">{{item.address}}</text>
+          <text wx:if="{{item.membership_required}}" class="dim small">
+            {{t.membershipRequired}} · {{t.maxCourtsPerMembership}} {{item.max_courts_per_membership || '—'}}
+          </text>
+        </view>
+        <text wx:if="{{d.club.primary_venue_id === item._id}}" class="tag tag-mine">{{t.primaryVenue}}</text>
+        <view wx:elif="{{d.is_admin}}" class="mini-btn ghost" data-id="{{item._id}}" bindtap="setPrimaryVenue">{{t.primaryVenue}}</view>
+      </view>
+      <view wx:if="{{d.venues.length === 0}}" class="dim">—</view>
+      <view wx:if="{{d.is_admin}}" class="btn btn-secondary" style="margin-top:20rpx" bindtap="toggleAddVenue">{{t.addVenue}}</view>
+    </view>
+
+    <view wx:if="{{addingVenue}}" class="card">
+      <view class="field">
+        <text class="field-label">{{t.venueName}}</text>
+        <input class="field-input" value="{{venueForm.name}}" data-k="name" bindinput="onVenueInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">{{t.address}}</text>
+        <input class="field-input" placeholder="{{t.optional}}" value="{{venueForm.address}}" data-k="address" bindinput="onVenueInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">{{t.membershipRequired}}</text>
+        <switch checked="{{venueForm.membership_required}}" bindchange="onVenueSwitch" />
+      </view>
+      <view wx:if="{{venueForm.membership_required}}" class="field">
+        <text class="field-label">{{t.maxCourtsPerMembership}}</text>
+        <view class="stepper">
+          <view class="stepper-btn" data-d="-1" bindtap="stepCourts">−</view>
+          <text class="stepper-value">{{venueForm.max_courts_per_membership || '∞'}}</text>
+          <view class="stepper-btn" data-d="1" bindtap="stepCourts">+</view>
+        </view>
+      </view>
+      <view class="btn" bindtap="submitVenue">{{t.addVenue}}</view>
+    </view>
+
+    <!-- admin settings -->
+    <block wx:if="{{d.is_admin}}">
+      <view class="card">
+        <view class="section-title">{{t.joinPolicy}}</view>
+        <view class="seg seg-vertical">
+          <view
+            wx:for="{{jpOptions}}"
+            wx:key="value"
+            class="seg-item {{d.club.join_policy === item.value ? 'is-active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="setJoinPolicy"
+          >{{item.label}}</view>
+        </view>
+
+        <!-- the code is how anyone finds this club at all, so it's always shown
+             to admins rather than being tied to one policy. §3.10 -->
+        <view class="field">
+          <text class="field-label">{{t.inviteCode}}</text>
+          <text class="code" bindtap="copyCode">{{d.club.invite_code}}</text>
+        </view>
+        <view class="field-hint">{{t.inviteCodeWhy}}</view>
+        <view class="mini-btn ghost" bindtap="rotateCode">{{t.rotateCode}}</view>
+      </view>
+
+      <!--
+        Money. Both of these were accepted by club.update from the first commit and
+        reachable from no screen, so every club was silently CAD with a 12h window.
+      -->
+      <view class="card">
+        <view class="section-title">{{t.moneySettings}}</view>
+        <view class="field">
+          <text class="field-label">{{t.currency}}</text>
+          <picker mode="selector" range="{{currencies}}" value="{{currencyIdx}}" bindchange="onCurrency">
+            <view class="field-value">{{currencies[currencyIdx]}} ›</view>
+          </picker>
+        </view>
+        <view class="field-hint">{{t.currencyWhy}}</view>
+        <view class="field">
+          <text class="field-label">{{t.graceHours}}</text>
+          <picker mode="selector" range="{{graceLabels}}" value="{{graceIdx}}" bindchange="onGrace">
+            <view class="field-value">{{graceLabels[graceIdx]}} ›</view>
+          </picker>
+        </view>
+        <view class="field-hint">{{t.graceHoursWhy}}</view>
+      </view>
+
+      <view class="card">
+        <view class="section-title">{{t.membershipPolicy}}</view>
+        <view class="seg seg-vertical">
+          <view
+            wx:for="{{mpOptions}}"
+            wx:key="value"
+            class="seg-item {{d.club.membership_policy === item.value ? 'is-active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="setMembershipPolicy"
+          >{{item.label}}</view>
+        </view>
+        <view class="field-hint">{{t.membershipWhy}}</view>
+      </view>
+    </block>
+  </block>
+</view>

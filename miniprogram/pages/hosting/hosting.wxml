@@ -1,0 +1,43 @@
+<view class="page">
+
+  <view wx:if="{{!upcoming.length && !done.length}}" class="empty">{{t.hostingNone}}</view>
+
+  <view wx:if="{{done.length}}" class="card">
+    <view class="section-title">{{t.needsYou}}</view>
+    <view
+      wx:for="{{done}}"
+      wx:key="_id"
+      class="host-row"
+      data-id="{{item._id}}"
+      bindtap="openBill"
+    >
+      <view class="host-main">
+        <text class="host-title">{{item.title}}</text>
+        <text class="dim small">{{item.when}} · {{item.seats}}</text>
+      </view>
+      <text class="host-note">{{item.note}}</text>
+      <text class="chev">›</text>
+    </view>
+  </view>
+
+  <view wx:if="{{upcoming.length}}" class="card">
+    <view class="section-title">{{t.hostingUpcoming}}</view>
+    <view
+      wx:for="{{upcoming}}"
+      wx:key="_id"
+      class="host-row"
+      data-id="{{item._id}}"
+      bindtap="openManage"
+    >
+      <view class="host-main">
+        <view class="name-line">
+          <text class="host-title">{{item.title}}</text>
+          <text class="tag tag-{{item.status_class}}">{{item.status_label}}</text>
+        </view>
+        <text class="dim small">{{item.when}} · {{item.seats}}{{item.note ? ' · ' + item.note : ''}}</text>
+      </view>
+      <text class="host-note">{{t.manage}}</text>
+      <text class="chev">›</text>
+    </view>
+  </view>
+</view>

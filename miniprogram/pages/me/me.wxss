@@ -1,0 +1,122 @@
+.profile-row {
+  display: flex;
+  align-items: center;
+}
+.avatar {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  margin-right: 24rpx;
+  display: block;
+}
+.avatar-empty {
+  background: #f0f0f5;
+  color: #8a8a96;
+  font-size: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.name {
+  font-size: 33rpx;
+  font-weight: 600;
+}
+.dim {
+  color: #8a8a96;
+}
+.small {
+  font-size: 21rpx;
+  margin-top: 6rpx;
+}
+.menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+  font-size: 27rpx;
+}
+.menu-row:last-child {
+  border-bottom: none;
+}
+/* a row that names its own purpose needs two lines, so the label column stacks */
+.menu-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.menu-label {
+  font-size: 27rpx;
+  color: #16161d;
+}
+.menu-sub {
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.chev {
+  color: #c3c3cd;
+  font-size: 32rpx;
+}
+
+/* --- what's waiting on you ------------------------------------------------ */
+.todo-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.todo-row:last-of-type {
+  border-bottom: none;
+}
+/*
+  A dash rather than an icon, and two colours rather than four.
+
+  An earlier version tinted each kind separately, which broke the palette's rule that
+  a colour means one thing: green would have meant "money owed to you" here and
+  "joinable" everywhere else. Accent says "your move", red says "you owe someone" —
+  the only kind with a consequence attached — and the row's own words say which job it
+  is, which is what they're there for.
+*/
+.todo-mark {
+  flex: 0 0 6rpx;
+  align-self: stretch;
+  min-height: 40rpx;
+  border-radius: 3rpx;
+  background: #5457d6;
+}
+.todo-mark.k-OWING {
+  background: #d64545;
+}
+.todo-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.todo-text {
+  font-size: 27rpx;
+  color: #16161d;
+}
+.todo-detail {
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.todo-action {
+  flex: 0 0 auto;
+  font-size: 23rpx;
+  color: #5457d6;
+}

@@ -1,0 +1,37 @@
+.dim {
+  color: #8a8a96;
+}
+.small {
+  font-size: 21rpx;
+  margin-top: 4rpx;
+}
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.host-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.host-row:last-child {
+  border-bottom: none;
+}
+.host-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.host-title {
+  font-size: 27rpx;
+  color: #16161d;
+}
+.host-note {
+  flex: 0 0 auto;
+  font-size: 23rpx;
+  color: #5457d6;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@yueqiu/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hono + PostgreSQL API for 约球. Reuses the WeChat cloud-function domain logic through an injectable document store.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node --env-file=.env --watch src/index.js",
+    "start": "node src/index.js",
+    "migrate": "node --env-file-if-exists=.env src/db/migrate.js",
+    "seed": "node --env-file-if-exists=.env src/db/seed.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.13.7",
+    "pino": "^9.5.0",
+    "postgres": "^3.4.9",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "pino-pretty": "^13.0.0",
+    "vitest": "^5.0.0"
+  }
+}

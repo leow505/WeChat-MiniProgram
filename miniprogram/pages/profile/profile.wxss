@@ -1,0 +1,50 @@
+.avatar-btn {
+  padding: 0;
+  margin: 0;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: transparent;
+  line-height: normal;
+  overflow: hidden;
+}
+.avatar-btn::after {
+  border: none;
+}
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  display: block;
+}
+.avatar-empty {
+  background: #f0f0f5;
+  color: #8a8a96;
+  font-size: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dim {
+  color: #8a8a96;
+}
+.small {
+  font-size: 21rpx;
+}
+.m-row {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.m-row:last-child {
+  border-bottom: none;
+}
+.m-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.m-name {
+  font-size: 27rpx;
+}

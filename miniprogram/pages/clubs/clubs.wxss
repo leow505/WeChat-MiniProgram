@@ -1,0 +1,134 @@
+/* same role and treatment as .section-title: a heading, not another grey line */
+.group-title {
+  font-size: 23rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  color: #8a8a96;
+  margin: 20rpx 8rpx 16rpx;
+}
+
+/* --- club card ------------------------------------------------------------ */
+.ccard {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 26rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 16rpx rgba(22, 22, 29, 0.05);
+}
+.ccard-main {
+  flex: 1;
+  min-width: 0;
+}
+.ccard-head {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+.ccard-name {
+  font-size: 33rpx;
+  font-weight: 600;
+}
+.ccard-desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.ccard-meta {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 10rpx;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.sep {
+  color: #c3c3cd;
+}
+/* what an admin actually needs to act on */
+.pending-line {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  background: #fdf2e4;
+  color: #c76a10;
+  font-size: 21rpx;
+}
+.chev {
+  flex: 0 0 auto;
+  margin-left: 16rpx;
+  color: #c3c3cd;
+  font-size: 32rpx;
+}
+
+/* --- action rows ---------------------------------------------------------- */
+.action-row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.action-row:last-child {
+  border-bottom: none;
+}
+.action-icon {
+  flex: 0 0 64rpx;
+  height: 64rpx;
+  margin-right: 20rpx;
+  border-radius: 16rpx;
+  background: #eeeefc;
+  color: #5457d6;
+  font-size: 34rpx;
+  line-height: 64rpx;
+  text-align: center;
+}
+.action-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.action-label {
+  font-size: 27rpx;
+}
+.action-sub {
+  font-size: 21rpx;
+  color: #8a8a96;
+  margin-top: 4rpx;
+}
+.inset {
+  padding: 8rpx 0 24rpx;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.seg-vertical {
+  flex-direction: column;
+  gap: 4rpx;
+  margin-bottom: 24rpx;
+}
+.code-input {
+  height: 96rpx;
+  margin: 12rpx 0 24rpx;
+  border-radius: 14rpx;
+  background: #f4f4f7;
+  text-align: center;
+  font-size: 40rpx;
+  font-weight: 600;
+  letter-spacing: 10rpx;
+}
+.join-btn {
+  flex: 0 0 auto;
+  margin: 0 0 0 16rpx;
+  padding: 0 32rpx;
+  height: 68rpx;
+  line-height: 68rpx;
+  border-radius: 34rpx;
+  background: #5457d6;
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 400;
+}
+.join-btn::after {
+  border: none;
+}

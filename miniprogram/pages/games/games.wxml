@@ -1,0 +1,94 @@
+<import src="../../templates/session-card.wxml" />
+
+<wxs module="h">
+  module.exports.any = function (a) { return a && a.length > 0 }
+</wxs>
+
+<!--
+  Two segments rather than two stacked sections. Stacked, a player with six signups
+  had to scroll past all of them to reach anything new; as segments neither list can
+  bury the other however long it gets.
+-->
+<view class="segbar">
+  <!-- the track matters: without it the unselected half was bare text on the page
+       background, so nothing said the two belonged to one control -->
+  <view class="segtrack">
+    <view class="segtab {{tab === 'MINE' ? 'is-active' : ''}}" data-tab="MINE" bindtap="onTab">
+      <text class="segtab-label">{{t.segMine}}</text>
+      <text wx:if="{{h.any(mine)}}" class="segtab-count">{{mine.length}}</text>
+    </view>
+    <view class="segtab {{tab === 'OPEN' ? 'is-active' : ''}}" data-tab="OPEN" bindtap="onTab">
+      <text class="segtab-label">{{t.segOpen}}</text>
+      <text wx:if="{{h.any(openAll)}}" class="segtab-count">{{openAll.length}}</text>
+    </view>
+  </view>
+</view>
+
+<view class="page page-tabbed">
+
+  <!-- outstanding fees, in both segments: it's the one thing here that someone else
+       is waiting on. Pushes can't be relied on to land (§8.1), so this persists. -->
+  <view wx:if="{{owing}}" class="notice is-stop" bindtap="openOwing">
+    <text>{{owing}}</text>
+    <text class="notice-cta">{{t.viewBill}} ›</text>
+  </view>
+
+  <!-- ===================== what I'm signed up for ===================== -->
+  <block wx:if="{{tab === 'MINE'}}">
+    <view wx:if="{{!loading && !h.any(mine)}}" class="empty">{{t.noneEnrolled}}</view>
+    <template wx:for="{{mine}}" wx:key="_id" is="sessionCard" data="{{...item, t: t}}" />
+
+    <!-- history is collapsed: it's reference, not the reason you opened the app.
+         It lives under 我报名的 because these are sessions you were on. -->
+    <block wx:if="{{h.any(past)}}">
+      <view class="group-title tappable" bindtap="togglePast">
+        <text>{{t.historyTitle}} ({{past.length}})</text>
+        <text class="chev {{showPast ? 'is-up' : 'is-down'}}">›</text>
+      </view>
+      <block wx:if="{{showPast}}">
+        <view
+          wx:for="{{past}}"
+          wx:key="_id"
+          class="past-row"
+          data-id="{{item._id}}"
+          bindtap="openEvent"
+        >
+          <view class="past-head">
+            <text class="past-title">{{item.title}}</text>
+            <text wx:if="{{item.owe_text}}" class="tag tag-share-unpaid">{{item.owe_text}}</text>
+          </view>
+          <text class="past-sub">{{item.time_text}} · {{item.venue_snapshot.name}}</text>
+        </view>
+        <view class="field-hint">{{t.retentionNote}}</view>
+      </block>
+    </block>
+  </block>
+
+  <!-- ===================== open to join ===================== -->
+  <block wx:else>
+    <!-- filter row sits above the cards it filters; chips only appear once there is
+         more than one club to disambiguate -->
+    <scroll-view wx:if="{{h.any(filters)}}" class="filterbar" scroll-x enable-flex>
+      <view
+        wx:for="{{filters}}"
+        wx:key="value"
+        class="fchip {{filter === item.value ? 'is-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onFilter"
+      >
+        <text class="fchip-label">{{item.label}}</text>
+        <text class="fchip-count">{{item.count}}</text>
+      </view>
+    </scroll-view>
+
+    <!-- with no clubs there is nothing to list, so point at the fix rather than
+         showing a bare "no sessions" -->
+    <view wx:if="{{!loading && !h.any(open) && !hasClubs}}" class="empty">
+      <text>{{t.noClubsYet}}</text>
+      <view class="btn btn-secondary empty-cta" bindtap="goClubs">{{t.goJoinClub}}</view>
+    </view>
+    <view wx:elif="{{!loading && !h.any(open)}}" class="empty">{{t.emptyGames}}</view>
+
+    <template wx:for="{{open}}" wx:key="_id" is="sessionCard" data="{{...item, t: t}}" />
+  </block>
+</view>

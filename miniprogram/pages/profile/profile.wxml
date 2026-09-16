@@ -1,0 +1,69 @@
+<view class="page">
+
+  <!-- getUserProfile no longer returns real name/avatar, so both are collected
+       explicitly. DESIGN.md §11 -->
+  <view class="card">
+    <view class="field">
+      <text class="field-label">{{t.avatar}}</text>
+      <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+        <image wx:if="{{profile.avatar_url}}" class="avatar" src="{{profile.avatar_url}}" mode="aspectFill" />
+        <view wx:else class="avatar avatar-empty">+</view>
+      </button>
+    </view>
+    <view class="field">
+      <text class="field-label">{{t.nickname}}</text>
+      <input
+        class="field-input"
+        type="nickname"
+        placeholder="{{t.nicknamePlaceholder}}"
+        value="{{profile.nickname}}"
+        bindblur="onNickname"
+        bindchange="onNickname"
+      />
+    </view>
+    <view class="field-hint">{{t.profileHint}}</view>
+  </view>
+
+  <!-- gender lives here rather than on the Me tab: it's profile data, and it only
+       matters for formats needing a male/female split. §3.9 -->
+  <view class="card">
+    <view class="section-title">{{t.gender}}</view>
+    <view class="seg">
+      <view
+        wx:for="{{genderOptions}}"
+        wx:key="value"
+        class="seg-item {{profile.gender === item.value ? 'is-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onGender"
+      >{{item.label}}</view>
+    </view>
+    <view class="field-hint">{{t.genderWhy}}</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">{{t.language}}</view>
+    <view class="seg">
+      <view
+        wx:for="{{localeOptions}}"
+        wx:key="value"
+        class="seg-item {{locale === item.value ? 'is-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onLocale"
+      >{{item.label}}</view>
+    </view>
+  </view>
+
+  <!-- venue memberships, read-only here; edited from the club that uses them -->
+  <view wx:if="{{memberships.length > 0}}" class="card">
+    <view class="section-title">{{t.myMembership}}</view>
+    <view wx:for="{{memberships}}" wx:key="_id" class="m-row">
+      <view class="m-main">
+        <text class="m-name">{{item.venue_name}}</text>
+        <text class="dim small">{{item.membership_name}}{{item.membership_no ? ' · ' + item.membership_no : ''}}</text>
+      </view>
+      <text class="tag {{item.verified_at ? 'tag-mine' : ''}}">
+        {{item.verified_at ? t.membershipVerified : t.membershipUnverified}}
+      </text>
+    </view>
+  </view>
+</view>

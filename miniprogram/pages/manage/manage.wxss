@@ -1,0 +1,79 @@
+.dim {
+  color: #8a8a96;
+}
+.small {
+  font-size: 21rpx;
+}
+.coverage {
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 23rpx;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+}
+.coverage.ok {
+  background: #e4f7ef;
+  color: #0a9c6b;
+}
+.coverage.short {
+  background: #fdf2e4;
+  color: #c76a10;
+}
+.helper-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+/* the currency stated once, as a unit on the field rather than on every amount */
+.unit {
+  flex: 0 0 auto;
+  margin-right: 10rpx;
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.holder-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.holder-row:last-child {
+  border-bottom: none;
+}
+.holder-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.holder-name {
+  font-size: 27rpx;
+}
+.mini-btn {
+  flex: 0 0 auto;
+  padding: 0 22rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 10rpx;
+  background: #5457d6;
+  color: #ffffff;
+  font-size: 24rpx;
+}
+.mini-btn.ghost {
+  background: #f0f0f5;
+  color: #55555f;
+}
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+.derived-cost {
+  margin: 12rpx 0 0;
+  padding: 18rpx 20rpx;
+  border-radius: 12rpx;
+  background: #eeeefc;
+  color: #55555f;
+  font-size: 27rpx;
+}

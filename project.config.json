@@ -1,0 +1,19 @@
+{
+  "appid": "touristappid",
+  "projectname": "badminton-play",
+  "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "packNpmManually": false,
+    "nodeModules": false,
+    "checkSiteMap": true
+  },
+  "condition": {}
+}

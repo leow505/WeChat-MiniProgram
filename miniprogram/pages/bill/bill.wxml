@@ -1,0 +1,152 @@
+<view wx:if="{{v}}" class="page">
+
+  <!-- which session, and where the bill has got to -->
+  <view class="card">
+    <view class="row-between">
+      <text class="card-title">{{v.event.title}}</text>
+      <text wx:if="{{v.status_label}}" class="tag tag-bill-{{v.status_class}}">{{v.status_label}}</text>
+    </view>
+    <view class="card-row"><text class="dim">{{v.time_text}} · {{v.event.venue_name}}</text></view>
+  </view>
+
+  <view wx:if="{{v.voided}}" class="notice">{{t.billVoidNote}}</view>
+
+  <!-- ================= player's side ================= -->
+  <block wx:if="{{!v.is_manager}}">
+    <view wx:if="{{!published}}" class="card">
+      <view class="section-title">{{t.myShareTitle}}</view>
+      <text class="dim">{{t.noBillYet}}</text>
+      <view class="field-hint" style="padding-top:12rpx">{{t.billPendingNote}}</view>
+    </view>
+
+    <block wx:elif="{{v.my_share_text && !v.voided}}">
+      <view class="card">
+        <view class="section-title">{{t.myShareTitle}}</view>
+        <view class="money-row">
+          <text class="money-big">{{v.my_share_text}}</text>
+          <text class="money-cur">{{v.currency_code}}</text>
+          <view class="money-tags">
+            <text class="tag tag-share-{{v.my_share_class}}">{{v.my_share_label}}</text>
+            <text wx:if="{{v.my_share_overdue}}" class="tag tag-share-overdue">{{t.overdueTag}}</text>
+          </view>
+        </view>
+        <text wx:if="{{v.due_text}}" class="due-line">{{v.due_text}}</text>
+
+        <!-- no money moves through the app, so this line is the whole instruction -->
+        <view wx:if="{{v.payment_note}}" class="pay-note" bindtap="copyPaymentNote">
+          <text class="k">{{t.howToPay}}</text>
+          <text class="v">{{v.payment_note}}</text>
+          <!-- the word, not a symbol: the copy glyph this used to carry came from yet
+               another Unicode block and read as a rendering artefact, not a control -->
+          <text class="pay-copy">{{t.copyName}}</text>
+        </view>
+
+        <block wx:if="{{v.my_share_unpaid}}">
+          <view wx:if="{{v.my_share_claimed}}" class="claimed-line">{{t.claimedPaid}}</view>
+          <view wx:else class="btn btn-secondary" style="margin-top:20rpx" bindtap="claimPaid">{{t.claimPaid}}</view>
+          <view class="field-hint" style="padding-top:16rpx">{{t.claimPaidHint}}</view>
+        </block>
+      </view>
+
+      <!-- the aggregate only: who else still owes is the organizer's business -->
+      <view wx:if="{{v.settled_line}}" class="strip">
+        <text class="k">{{t.sharesTitle}}</text>
+        <text class="v">{{v.settled_line}}</text>
+      </view>
+    </block>
+  </block>
+
+  <!-- ================= organizer's side ================= -->
+  <block wx:if="{{v.is_manager}}">
+
+    <!-- before play the roster is still moving, so there is nothing final to split -->
+    <view wx:if="{{!v.ended}}" class="card">
+      <view class="section-title">{{t.splitTitle}}</view>
+      <text class="dim">{{t.billPendingNote}}</text>
+      <view wx:if="{{v.bill}}" class="field" style="border-bottom:none">
+        <text class="field-label">{{t.totalPaid}}</text>
+        <text class="field-value">{{v.currency_code}} {{v.total_text}}</text>
+      </view>
+    </view>
+
+    <block wx:else>
+      <!--
+        A total, a list, a publish button — and no question about who turned up.
+
+        There used to be a 出席/缺席 toggle on every row. It made the organizer tally
+        faces before anyone could be charged, which is bookkeeping this app exists to
+        remove: a seat was yours to release before the deadline or to fill with a
+        replacement, so every head that held one pays (§14).
+      -->
+      <view class="card">
+        <view class="section-title">{{t.splitTitle}}</view>
+
+        <view class="field">
+          <text class="field-label">{{t.totalPaid}}</text>
+          <text class="unit">{{v.currency_code}}</text>
+          <input class="field-input" type="digit" placeholder="96.00" value="{{totalCost}}" bindinput="onTotalCost" />
+        </view>
+
+        <view wx:if="{{v.preview.payer_count}}" class="split-box">
+          <text class="split-main">{{v.per_share_text}}</text>
+          <text class="split-sub">{{v.units_line}}</text>
+          <text wx:if="{{v.remainder_note}}" class="split-sub">{{v.remainder_note}}</text>
+          <text wx:if="{{v.surcharge_line}}" class="split-sub">{{v.surcharge_line}}</text>
+        </view>
+        <view wx:elif="{{!totalCost}}" class="field-hint">{{t.noTotalYet}}</view>
+
+        <view class="field">
+          <text class="field-label">{{t.paymentNote}}</text>
+          <input
+            class="field-input"
+            placeholder="{{t.paymentNotePlaceholder}}"
+            value="{{paymentNote}}"
+            bindinput="onPaymentNote"
+          />
+        </view>
+        <view class="field-hint">{{t.paymentNoteHint}}</view>
+
+        <view wx:if="{{v.can_publish}}" class="btn" bindtap="publish">{{v.publish_label}}</view>
+        <view wx:if="{{!published}}" class="field-hint" style="padding:16rpx 0 0">{{v.publish_hint}}</view>
+      </view>
+
+      <!--
+        One list through both phases. Before publishing it shows what each person would
+        owe; after, what they do owe and whether it has arrived. Same rows either way, so
+        the organizer watches the numbers settle rather than meeting a second table —
+        and there is no point at which the split is invisible.
+      -->
+      <view wx:if="{{!v.voided && rows.length}}" class="card">
+        <view class="section-title">{{v.list_title}}{{v.settled_line ? ' · ' + v.settled_line : ''}}</view>
+        <view wx:if="{{published}}" class="progress {{v.all_settled ? 'is-done' : ''}}">
+          <text>{{v.outstanding_line}}</text>
+          <text wx:if="{{v.due_text}}" class="dim small">{{v.due_text}}</text>
+        </view>
+
+        <view wx:for="{{rows}}" wx:key="openid" class="share-row">
+          <view class="person-avatar g-{{item.gender_class}}">{{item.initial}}</view>
+          <view class="share-main">
+            <view class="name-line">
+              <text class="share-name">{{item.name}}</text>
+              <text wx:if="{{item.guest_mark}}" class="guest-mark">{{item.guest_mark}}</text>
+              <text wx:if="{{item.status_label}}" class="tag tag-share-{{item.status_class}}">{{item.status_label}}</text>
+              <text wx:if="{{item.overdue}}" class="tag tag-share-overdue">{{t.overdueTag}}</text>
+            </view>
+            <!-- a player saying they paid doesn't settle it; it flags the gap. §9.4 -->
+            <text wx:if="{{item.claimed_paid_at && item.can_mark}}" class="claim-mark">{{t.claimedPaid}}</text>
+            <text wx:if="{{item.off_roster}}" class="dim small">{{t.offRoster}}</text>
+          </view>
+          <text class="amount">{{item.amount_text}}</text>
+          <view wx:if="{{item.can_mark}}" class="mini-btn" data-openid="{{item.openid}}" bindtap="markPaid">{{t.markPaid}}</view>
+          <view wx:if="{{item.can_mark}}" class="mini-btn ghost" data-openid="{{item.openid}}" bindtap="waive">{{t.waiveShare}}</view>
+          <view wx:if="{{item.can_undo}}" class="mini-btn ghost" data-openid="{{item.openid}}" bindtap="markUnpaid">{{t.markUnpaid}}</view>
+        </view>
+      </view>
+
+      <view wx:if="{{published && !v.voided}}" class="card">
+        <view class="btn btn-danger" bindtap="voidBill">{{t.voidBill}}</view>
+        <view class="field-hint" style="padding:16rpx 0 0">{{t.confirmVoidBillBody}}</view>
+      </view>
+    </block>
+  </block>
+</view>

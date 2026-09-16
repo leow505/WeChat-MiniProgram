@@ -1,0 +1,62 @@
+.dim {
+  color: #8a8a96;
+}
+.hero-where {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+/* a balanced roster reads "男 2/4 · 女 1/4" — a sentence, not a figure, so it drops
+   from the focal size to h2 rather than overflowing */
+.cap-count.is-long {
+  font-size: 33rpx;
+}
+.court-v {
+  font-weight: 600;
+  color: #5457d6;
+}
+.divider {
+  height: 1rpx;
+  background: #f0f0f5;
+  margin: 28rpx 0 24rpx;
+}
+.person-meta {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 4rpx;
+  min-height: 28rpx;
+}
+.person-meta .gender {
+  font-size: 21rpx;
+}
+/* soft tint on the avatar as well, so gender reads from the roster grid at a
+   glance and not only from the meta line */
+.person-avatar.g-male {
+  background: #e6f0fb;
+  color: #23608f;
+}
+.person-avatar.g-female {
+  background: #fde8f1;
+  color: #9c3363;
+}
+/* you, whatever your gender: the accent wins so your own row is findable */
+.person-avatar.is-me {
+  background: #5457d6;
+  color: #ffffff;
+}
+.guest-mark {
+  font-size: 21rpx;
+  color: #c76a10;
+}
+.detail-body {
+  margin-top: 12rpx;
+}
+.row-btns {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 16rpx;
+}
+.btn-narrow {
+  flex: 0 0 150rpx;
+}

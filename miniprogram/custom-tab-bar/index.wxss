@@ -1,0 +1,162 @@
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  height: 112rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #ffffff;
+  border-top: 1rpx solid #ededf2;
+}
+
+.item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding-top: 10rpx;
+}
+
+/* The hit box hugs the icon and label, so a tap far from the text does nothing. */
+.hit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6rpx 30rpx 4rpx;
+  border-radius: 16rpx;
+}
+
+.label {
+  margin-top: 6rpx;
+  font-size: 26rpx;
+  line-height: 1.2;
+  color: #8a8a96;
+}
+.hit.is-active .label {
+  color: #5457d6;
+  font-weight: 600;
+}
+
+/* pending club requests, since Clubs lives under 我的 */
+.dot {
+  position: absolute;
+  top: 0;
+  right: 8rpx;
+  min-width: 30rpx;
+  height: 30rpx;
+  padding: 0 6rpx;
+  border-radius: 15rpx;
+  background: #d64545;
+  color: #ffffff;
+  font-size: 19rpx;
+  line-height: 30rpx;
+  text-align: center;
+}
+
+/* --- raised centre button --------------------------------------------------
+   Everything here is centred with translate rather than computed offsets. The
+   first version positioned the plus strokes with hand-figured left/top values
+   against a 104rpx box, but the 6rpx border sits outside it without box-sizing,
+   so both strokes landed 6rpx up and left of true centre. */
+.center {
+  position: relative;
+  flex: 0 0 152rpx;
+  /* stretch, so the button's -34rpx lift is measured from the bar's top edge and
+     not from a zero-height box */
+  align-self: stretch;
+}
+.fabtn {
+  position: absolute;
+  left: 50%;
+  /* lifted above the bar's top edge — the "sits higher" part of the pattern */
+  top: -34rpx;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  background: #5457d6;
+  border: 6rpx solid #ffffff;
+  box-shadow: 0 6rpx 20rpx rgba(84, 87, 214, 0.32);
+}
+.plus-h,
+.plus-v {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #ffffff;
+  border-radius: 3rpx;
+}
+.plus-h {
+  width: 42rpx;
+  height: 6rpx;
+  transform: translate(-50%, -50%);
+}
+.plus-v {
+  width: 6rpx;
+  height: 42rpx;
+  transform: translate(-50%, -50%);
+}
+
+/* --- CSS icons: no image assets, tint with the active colour --------------- */
+.ico {
+  width: 40rpx;
+  height: 40rpx;
+  position: relative;
+}
+
+/* racket: ring plus a short grip */
+.ico-racket .head {
+  position: absolute;
+  top: 2rpx;
+  left: 8rpx;
+  width: 24rpx;
+  height: 26rpx;
+  border: 3rpx solid #8a8a96;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.ico-racket .grip {
+  position: absolute;
+  bottom: 2rpx;
+  left: 19rpx;
+  width: 3rpx;
+  height: 12rpx;
+  background: #8a8a96;
+}
+.hit.is-active .ico-racket .head {
+  border-color: #5457d6;
+}
+.hit.is-active .ico-racket .grip {
+  background: #5457d6;
+}
+
+/* person: head plus shoulders */
+.ico-person .head {
+  position: absolute;
+  top: 3rpx;
+  left: 13rpx;
+  width: 15rpx;
+  height: 15rpx;
+  border: 3rpx solid #8a8a96;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.ico-person .body {
+  position: absolute;
+  bottom: 3rpx;
+  left: 6rpx;
+  width: 29rpx;
+  height: 15rpx;
+  border: 3rpx solid #8a8a96;
+  border-bottom: none;
+  border-radius: 16rpx 16rpx 0 0;
+  box-sizing: border-box;
+}
+.hit.is-active .ico-person .head,
+.hit.is-active .ico-person .body {
+  border-color: #5457d6;
+}

@@ -1,0 +1,241 @@
+<view wx:if="{{ev}}" class="page">
+
+  <view class="card">
+    <text class="card-title">{{ev.title}}</text>
+    <view class="card-row"><text class="dim">{{ev.time_text}} · {{ev.venue_snapshot.name}}</text></view>
+    <view class="card-row"><text class="dim">{{ev.count_text}}</text></view>
+  </view>
+
+  <!-- === court booking ================================================ -->
+  <view class="card">
+    <view class="section-title">{{t.courtBooking}}</view>
+
+    <view class="seg">
+      <view
+        wx:for="{{statusOptions}}"
+        wx:key="value"
+        class="seg-item {{courtStatus === item.value ? 'is-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="setStatus"
+      >{{item.label}}</view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">{{t.courtLabelsField}}</text>
+      <input class="field-input" placeholder="3号场, 5号场" value="{{courtText}}" bindinput="onCourtText" />
+    </view>
+    <view class="field-hint">{{t.courtLabelsHint}}</view>
+
+    <view class="field">
+      <text class="field-label">{{t.courtCount}}</text>
+      <view class="stepper">
+        <view class="stepper-btn" data-k="courtCount" data-d="-1" bindtap="step">−</view>
+        <text class="stepper-value">{{courtCount}}</text>
+        <view class="stepper-btn" data-k="courtCount" data-d="1" bindtap="step">+</view>
+      </view>
+    </view>
+
+    <!-- the total is entered here because this is when the organizer has the receipt;
+         publishing the split is a separate act after play. §9.1 -->
+    <view class="field">
+      <text class="field-label">{{t.totalPaid}}</text>
+      <text class="unit">{{currency}}</text>
+      <input class="field-input" type="digit" placeholder="96.00" value="{{totalCost}}" bindinput="onTotalCost" />
+    </view>
+    <view wx:if="{{perPersonText}}" class="derived-cost">{{perPersonText}}</view>
+    <view class="field-hint">{{t.totalPaidHint}}</view>
+
+    <view class="btn" bindtap="saveCourts">{{t.save}}</view>
+  </view>
+
+  <!-- === signup rules ================================================= -->
+  <!--
+    Capacity used to live in the court card, because booking fewer courts than planned
+    has to shrink the roster (§3.5). But that made "let two more people in" look like a
+    court-booking act, and the deadlines weren't editable at all — so an organizer whose
+    session filled up had to cancel and repost, losing the roster and the queue.
+  -->
+  <view class="card">
+    <view class="section-title">{{t.signupRules}}</view>
+    <view class="field-hint">{{t.signupRulesHint}}</view>
+    <view wx:if="{{signupClosed}}" class="notice">{{t.reopenNote}}</view>
+
+    <block wx:if="{{balanced}}">
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.maleSlots}}</text>
+          <view class="stepper">
+            <view class="stepper-btn" data-k="maleSlots" data-d="-1" bindtap="step">−</view>
+            <text class="stepper-value">{{maleSlots}}</text>
+            <view class="stepper-btn" data-k="maleSlots" data-d="1" bindtap="step">+</view>
+          </view>
+        </view>
+      </view>
+      <view class="setting">
+        <view class="setting-head">
+          <text class="setting-label">{{t.femaleSlots}}</text>
+          <view class="stepper">
+            <view class="stepper-btn" data-k="femaleSlots" data-d="-1" bindtap="step">−</view>
+            <text class="stepper-value">{{femaleSlots}}</text>
+            <view class="stepper-btn" data-k="femaleSlots" data-d="1" bindtap="step">+</view>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="setting">
+      <view class="setting-head">
+        <text class="setting-label">{{t.capacityLabel}}</text>
+        <view class="stepper">
+          <view class="stepper-btn" data-k="capacity" data-d="-1" bindtap="step">−</view>
+          <text class="stepper-value">{{capacity}}</text>
+          <view class="stepper-btn" data-k="capacity" data-d="1" bindtap="step">+</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="setting">
+      <view class="setting-head">
+        <text class="setting-label">{{t.minPlayers}}</text>
+        <view class="stepper">
+          <view class="stepper-btn" data-k="minPlayers" data-d="-1" bindtap="step">−</view>
+          <text class="stepper-value">{{minPlayers}}</text>
+          <view class="stepper-btn" data-k="minPlayers" data-d="1" bindtap="step">+</view>
+        </view>
+      </view>
+      <text class="setting-note">{{t.minPlayersHint}}</text>
+    </view>
+
+    <view class="setting">
+      <view class="setting-head">
+        <text class="setting-label">{{t.guestsPerMember}}</text>
+        <view class="stepper">
+          <view class="stepper-btn" data-k="maxGuests" data-d="-1" bindtap="step">−</view>
+          <text class="stepper-value">{{maxGuests}}</text>
+          <view class="stepper-btn" data-k="maxGuests" data-d="1" bindtap="step">+</view>
+        </view>
+      </view>
+      <text class="setting-note">{{t.guestsHint}}</text>
+    </view>
+
+    <view class="setting">
+      <text class="setting-label">{{t.joinDeadline}}</text>
+      <text class="setting-note">{{t.joinDeadlineNote}}</text>
+      <view class="seg">
+        <view class="seg-item {{deadlineRule === 'AT_EVENT_START' ? 'is-active' : ''}}" data-value="AT_EVENT_START" bindtap="onDeadlineRule">{{t.atEventStart}}</view>
+        <view class="seg-item {{deadlineRule === 'AT_TIME' ? 'is-active' : ''}}" data-value="AT_TIME" bindtap="onDeadlineRule">{{t.customTime}}</view>
+      </view>
+      <view wx:if="{{deadlineRule === 'AT_TIME'}}" class="sub-fields">
+        <view class="field">
+          <text class="field-label">{{t.deadlineDate}}</text>
+          <picker mode="date" value="{{deadlineDate}}" bindchange="onDeadlineDate">
+            <view class="field-value">{{deadlineDate}} ›</view>
+          </picker>
+        </view>
+        <view class="field">
+          <text class="field-label">{{t.deadlineTime}}</text>
+          <picker mode="time" value="{{deadlineTime}}" bindchange="onDeadlineTime">
+            <view class="field-value">{{deadlineTime}} ›</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="setting">
+      <view class="setting-head">
+        <text class="setting-label">{{t.stopWithdrawBefore}}</text>
+        <picker mode="selector" range="{{withdrawLabels}}" value="{{withdrawIdx}}" bindchange="onWithdraw">
+          <view class="field-value">{{withdrawLabels[withdrawIdx]}} ›</view>
+        </picker>
+      </view>
+      <text class="setting-note">{{t.withdrawNote}}</text>
+    </view>
+
+    <view class="btn" bindtap="saveRules">{{t.saveRules}}</view>
+  </view>
+
+  <!-- === booking helper ============================================== -->
+  <view class="card">
+    <!-- Booking several courts needs several members' cards (§3.8), so the names are
+         wanted as a list far more often than one at a time. -->
+    <view class="helper-head">
+      <view class="section-title" style="margin:0">{{t.bookingHelper}}</view>
+      <view
+        wx:if="{{booking && booking.holders.length > 1}}"
+        class="mini-btn ghost"
+        bindtap="copyAllMemberships"
+      >{{t.copyAll}}</view>
+    </view>
+
+    <view wx:if="{{!booking || !booking.venue}}" class="dim">{{t.noVenueForBooking}}</view>
+    <block wx:else>
+      <view wx:if="{{coverageText}}" class="coverage {{booking.coverage.ok ? 'ok' : 'short'}}">
+        {{coverageText}}
+      </view>
+      <view wx:if="{{booking.holders.length === 0}}" class="dim">{{t.noHolders}}</view>
+      <view wx:for="{{booking.holders}}" wx:key="openid" class="holder-row">
+        <view class="holder-main">
+          <text class="holder-name">{{item.membership_name}}</text>
+          <text class="dim small">
+            {{item.nickname}}{{item.membership_no ? ' · ' + item.membership_no : ''}}
+            {{item.verified ? ' · ' + t.membershipVerified : ''}}
+          </text>
+        </view>
+        <view class="mini-btn ghost" data-name="{{item.membership_name}}" bindtap="copyMembership">{{t.copyName}}</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- === roster ====================================================== -->
+  <view class="card">
+    <view class="section-title">{{t.rosterManage}} · {{ev.count_text}}</view>
+    <view wx:for="{{ev.roster}}" wx:key="openid" class="holder-row">
+      <view class="person-avatar">{{item.initial}}</view>
+      <view class="holder-main">
+        <view class="name-line">
+          <text class="holder-name">{{item.name}}</text>
+          <text wx:if="{{item.gender_glyph}}" class="gender {{item.gender_class}}">{{item.gender_glyph}}</text>
+        </view>
+        <text wx:if="{{item.guest_count > 0}}" class="dim small">+{{item.guest_count}}</text>
+      </view>
+      <view
+        wx:if="{{item.openid !== ev.creator_openid}}"
+        class="mini-btn ghost"
+        data-openid="{{item.openid}}"
+        data-name="{{item.name}}"
+        bindtap="removePlayer"
+      >{{t.removeFromGame}}</view>
+    </view>
+
+    <block wx:if="{{ev.waitlist.length > 0}}">
+      <view class="section-title" style="margin-top:24rpx">{{t.waitlistTitle}} {{ev.waitlist.length}}</view>
+      <view wx:for="{{ev.waitlist}}" wx:key="openid" class="holder-row">
+        <view class="person-avatar">{{item.initial}}</view>
+        <view class="holder-main">
+          <view class="name-line">
+            <text class="holder-name">{{item.name}}</text>
+            <text wx:if="{{item.gender_glyph}}" class="gender {{item.gender_class}}">{{item.gender_glyph}}</text>
+          </view>
+        </view>
+        <view
+          class="mini-btn ghost"
+          data-openid="{{item.openid}}"
+          data-name="{{item.name}}"
+          bindtap="removePlayer"
+        >{{t.removeFromGame}}</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- settlement is a screen of its own: this one is about getting the session on,
+       that one about paying for it once it's over -->
+  <view class="strip" bindtap="openBill">
+    <text class="k">{{t.costSplit}}</text>
+    <text class="v is-link">{{t.goSettle}}</text>
+    <text class="chev">›</text>
+  </view>
+
+  <view class="card">
+    <view class="btn btn-secondary" bindtap="duplicate">{{t.duplicateGame}}</view>
+    <view class="btn btn-danger" style="margin-top:20rpx" bindtap="cancelGame">{{t.cancelGame}}</view>
+  </view>
+</view>

@@ -1,0 +1,157 @@
+<view wx:if="{{ev}}" class="page">
+
+  <!-- hero: the page exists to answer "can I get in", so capacity leads -->
+  <view class="hero">
+    <view class="hero-top">
+      <text class="hero-title">{{ev.title}}</text>
+      <text class="tag tag-{{ev.status_class}}">{{ev.status_label}}</text>
+    </view>
+    <text class="hero-when">{{ev.time_text}}</text>
+    <view class="hero-where">
+      <text>{{ev.where_line}}</text>
+      <text wx:if="{{ev.club_only}}" class="tag">{{t.clubOnlyBadge}}</text>
+    </view>
+
+    <!-- count, meter and shortfall in one tinted block, matching the list card's, so
+         "can I get in" has the same shape wherever it's asked -->
+    <view class="hero-capacity {{ev.is_full ? 'is-full' : ''}}">
+      <text class="cap-count {{ev.cap_long ? 'is-long' : ''}}">{{ev.count_text}}</text>
+      <view class="meter">
+        <view class="meter-fill {{ev.is_full ? 'is-full' : ''}}" style="width: {{ev.meter_pct}}%"></view>
+      </view>
+      <text class="cap-note {{ev.is_full ? '' : 'is-short'}}">{{ev.seats_left_text}}</text>
+    </view>
+    <text wx:if="{{ev.hero_sub}}" class="hero-sub">{{ev.hero_sub}}</text>
+  </view>
+
+  <view wx:if="{{ev.needs_gender}}" class="notice">{{t.genderNeeded}}</view>
+
+  <!-- persists until settled, because a push can't be relied on to land. §9.4 -->
+  <view wx:if="{{ev.owe_banner}}" class="notice {{ev.owe_overdue ? 'is-stop' : ''}}" bindtap="openBill">
+    <text>{{ev.owe_banner}}</text>
+    <text class="notice-cta">{{t.viewBill}} ›</text>
+  </view>
+
+  <view wx:if="{{ev.bill_link}}" class="strip" bindtap="openBill">
+    <text class="k">{{t.costSplit}}</text>
+    <text class="v is-link">{{ev.bill_status_label || t.billTitle}}</text>
+    <text class="chev">›</text>
+  </view>
+
+  <!-- courts: one line, not a whole titled card -->
+  <view class="strip">
+    <text class="k">{{t.courts}}</text>
+    <text wx:if="{{ev.courts_visible && ev.courts_line}}" class="v court-v">{{ev.courts_line}}</text>
+    <text wx:elif="{{!ev.courts_visible}}" class="v dim">{{t.courtsHidden}}</text>
+    <text wx:else class="v dim">{{t.courtsPending}}</text>
+  </view>
+
+  <view wx:if="{{ev.club_name}}" class="strip" bindtap="openClub">
+    <text class="k">{{t.club}}</text>
+    <text class="v is-link">{{ev.club_name}}</text>
+    <text class="chev">›</text>
+  </view>
+
+  <!-- who's coming: roster and waitlist in one card, divided -->
+  <view class="card">
+    <view class="section-title">{{t.rosterTitle}} {{ev.roster.length}} · {{ev.count_text}}</view>
+    <view wx:if="{{ev.roster.length === 0}}" class="dim">{{t.noOneYet}}</view>
+    <view class="people">
+      <view wx:for="{{ev.roster}}" wx:key="openid" class="person">
+        <view class="person-avatar {{item.is_me ? 'is-me' : ''}} g-{{item.gender_class}}">{{item.initial}}</view>
+        <text class="person-name">{{item.name}}</text>
+        <view class="person-meta">
+          <text wx:if="{{item.gender_glyph}}" class="gender {{item.gender_class}}">{{item.gender_glyph}}</text>
+          <text wx:if="{{item.guest_mark}}" class="guest-mark">{{item.guest_mark}}</text>
+        </view>
+      </view>
+    </view>
+
+    <block wx:if="{{ev.waitlist.length > 0}}">
+      <view class="divider"></view>
+      <view class="section-title">
+        {{t.waitlistTitle}} {{ev.waitlist.length}}<text wx:if="{{ev.position_text}}"> · {{ev.position_text}}</text>
+      </view>
+      <view class="people">
+        <view wx:for="{{ev.waitlist}}" wx:key="openid" class="person">
+          <view class="person-avatar {{item.is_me ? 'is-me' : ''}} g-{{item.gender_class}}">{{item.initial}}</view>
+          <text class="person-name">{{item.name}}</text>
+          <view class="person-meta">
+            <text wx:if="{{item.gender_glyph}}" class="gender {{item.gender_class}}">{{item.gender_glyph}}</text>
+            <text wx:if="{{item.guest_mark}}" class="guest-mark">{{item.guest_mark}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- guests: pick before joining, or edit after. §3.7 -->
+  <view wx:if="{{showGuestPicker || editingGuests}}" class="card">
+    <view class="field">
+      <text class="field-label">{{t.bringFriends}}</text>
+      <view class="stepper">
+        <view class="stepper-btn {{guests.length === 0 ? 'is-disabled' : ''}}" bindtap="guestMinus">−</view>
+        <text class="stepper-value">{{guests.length}}</text>
+        <view class="stepper-btn {{guests.length >= ev.max_guests_per_member ? 'is-disabled' : ''}}" bindtap="guestPlus">+</view>
+      </view>
+    </view>
+
+    <!-- a balanced format needs each guest bucketed by gender -->
+    <block wx:if="{{ev.balanced}}">
+      <view wx:for="{{guests}}" wx:for-item="g" wx:for-index="gi" wx:key="gi" class="field">
+        <text class="field-label">{{t.friendGender}} {{gi + 1}}</text>
+        <view class="seg seg-inline">
+          <view
+            wx:for="{{genderOptions}}"
+            wx:for-item="opt"
+            wx:key="value"
+            class="seg-item {{g.gender === opt.value ? 'is-active' : ''}}"
+            data-idx="{{gi}}"
+            data-value="{{opt.value}}"
+            bindtap="setGuestGender"
+          >{{opt.label}}</view>
+        </view>
+      </view>
+    </block>
+
+    <view class="field-hint">{{t.guestSeatNote}}</view>
+
+    <view wx:if="{{editingGuests}}" class="row-btns">
+      <view class="btn btn-secondary" bindtap="cancelEditGuests">{{t.cancel}}</view>
+      <view class="btn" bindtap="saveGuests">{{t.save}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{ev.my_state === 'ROSTER' && ev.max_guests_per_member > 0 && !editingGuests && ev.joinable}}"
+        class="strip" bindtap="startEditGuests">
+    <text class="v is-link">{{t.changeGuests}}</text>
+    <text class="chev">›</text>
+  </view>
+
+  <!-- reference settings, collapsed: most players never read them -->
+  <view class="card">
+    <view class="disclosure" bindtap="toggleDetails">
+      <text class="disclosure-label">{{t.signupInfo}}</text>
+      <text class="chev {{showDetails ? 'is-up' : 'is-down'}}">›</text>
+    </view>
+    <view wx:if="{{showDetails}}" class="detail-body">
+      <view wx:for="{{ev.detailRows}}" wx:key="k" class="info-row">
+        <text class="k">{{item.k}}</text>
+        <text class="v">{{item.v}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- CTA: all <button> so the share button's box model matches its neighbours -->
+<view wx:if="{{ev}}" class="cta-bar">
+  <button class="btn btn-secondary btn-narrow" open-type="share">{{t.share}}</button>
+  <button wx:if="{{webInviteEnabled}}" class="btn btn-secondary btn-narrow" bindtap="copyWebInvite">{{t.copyInviteLink}}</button>
+  <button wx:if="{{ev.can_manage}}" class="btn btn-secondary btn-narrow" bindtap="manage">{{t.manage}}</button>
+  <button wx:if="{{ev.my_state}}" class="btn {{ev.can_withdraw ? 'btn-danger' : 'is-disabled'}}" bindtap="withdraw">
+    {{ev.can_withdraw ? t.withdraw : t.cannotWithdraw}}
+  </button>
+  <button wx:else class="btn {{ev.joinable ? '' : 'is-disabled'}}" bindtap="join">
+    {{ev.cta_text}}
+  </button>
+</view>

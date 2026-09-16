@@ -1,0 +1,867 @@
+/**
+ * Palette.
+ *
+ * These values are inlined rather than driven by CSS custom properties. An earlier
+ * version declared tokens on `page` and used var() everywhere, which broke: a
+ * custom tab bar is a style-isolated Component, so page-level properties never
+ * reach it and its background resolved to nothing. Rather than gamble on which
+ * base libraries cascade WXSS variables where, the values are literal.
+ *
+ * Keep this list as the reference when changing colours — it is the palette, even
+ * though substitution is by hand:
+ *
+ *   bg           #f4f4f7      page background
+ *   surface      #ffffff      cards, bars
+ *   surface-2    #f8f8fb      insets, date block, muted cards
+ *   line         #ededf2      hairlines
+ *   fill         #f0f0f5      inert fills, tracks, avatars
+ *   ink          #16161d      primary text
+ *   ink-2        #55555f      secondary text
+ *   ink-3        #8a8a96      tertiary text, labels
+ *   ink-4        #c3c3cd      disabled, chevrons
+ *   accent       #5457d6      indigo — buttons, links, active states
+ *   accent-soft  #eeeefc      accent backgrounds
+ *   ok           #0a9c6b      joinable
+ *   warn         #c76a10      waitlist only
+ *   stop         #d64545      full, no way in
+ *   male         #2b7fd4      ♂ glyph, male avatar text
+ *   female       #c93f92      ♀ glyph, female avatar text
+ *   radius       24rpx        card corners
+ *
+ * The accent is indigo, not green/amber/red, because those three already carry
+ * status meaning and a brand colour among them would muddy it.
+ *
+ *
+ * Type scale.
+ *
+ * Six steps, each with one job. There used to be a dozen sizes clustered inside 8rpx
+ * of each other — 26rpx alone did five different jobs in two different greys — so
+ * nothing on a card or a detail page was visibly more important than anything else.
+ * If a new element seems to need a seventh size, it almost certainly wants an existing
+ * step in a different colour, or a block of its own.
+ *
+ *   focal    52rpx  600   the one number a page exists to answer (hero capacity)
+ *   numeral  46rpx  600   the date anchor on a list card
+ *   h1       38rpx  600   hero / page title
+ *   h2       33rpx  600   card title
+ *   body     27rpx  400   primary values — the facts you scan
+ *   meta     23rpx  400   labels, secondary context, section headings
+ *   micro    21rpx  400   chips, footnotes, tags
+ *
+ * And colour carries rank, not just size — one role each, no exceptions:
+ *
+ *   ink      #16161d   anchors and primary values only
+ *   ink-2    #55555f   the facts line, secondary values
+ *   ink-3    #8a8a96   labels, meta, footnotes
+ *   accent / status     at most one emphasis per block
+ *
+ * Deliberately exempt: `.btn`, `.stepper-btn`, `.seg-item`, `.chev`,
+ * `.person-avatar`. Those size for touch legibility rather than reading rank, and
+ * forcing them onto the scale would make controls harder to hit and read. They are
+ * the only exemptions; if a sixth appears, it is probably text.
+ */
+page {
+  background: #f4f4f7;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  color: #16161d;
+  font-size: 27rpx;
+}
+
+/* bottom padding clears the custom tab bar (112rpx) plus breathing room */
+.page {
+  padding: 24rpx 24rpx 180rpx;
+}
+
+/* cards ------------------------------------------------------------------ */
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 16rpx rgba(22, 22, 29, 0.05);
+}
+.card-title {
+  font-size: 33rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.card-row {
+  display: flex;
+  align-items: center;
+  color: #55555f;
+  margin-top: 12rpx;
+}
+.card-row .label {
+  color: #8a8a96;
+  margin-right: 12rpx;
+}
+
+/* A heading, not another grey line of prose. It sat at 26rpx in ink-3, identical to
+   the label columns and the hint text around it, so it didn't read as a heading at
+   all. Dropped to meta and given letter-spacing, which is what distinguishes a label
+   from body text in both scripts. */
+.section-title {
+  font-size: 23rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  color: #8a8a96;
+  margin: 8rpx 0 16rpx;
+}
+
+/* tags ------------------------------------------------------------------- */
+.tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 21rpx;
+  background: #f0f0f5;
+  color: #55555f;
+}
+/* Colour carries the meaning, so the states have to be distinguishable:
+   green = joinable · amber = only a waitlist · red = full, no way in ·
+   grey = over · blue = your own state. */
+.tag-open {
+  background: #e4f7ef;
+  color: #0a9c6b;
+}
+.tag-waitlist-only {
+  background: #fdf2e4;
+  color: #c76a10;
+}
+.tag-full-closed {
+  background: #fdecec;
+  color: #d64545;
+}
+.tag-signup-closed,
+.tag-completed,
+.tag-in-progress {
+  background: #f0f0f5;
+  color: #8a8a96;
+}
+.tag-cancelled {
+  background: #f0f0f5;
+  color: #8a8a96;
+  text-decoration: line-through;
+}
+/* your own state, not an invitation to act — deliberately a different hue */
+.tag-mine {
+  background: #eeeefc;
+  color: #5457d6;
+}
+.tag-waiting {
+  background: #fdf2e4;
+  color: #c76a10;
+}
+
+/* Bill lifecycle (§9.1): grey while it is only a recorded number, indigo once it is
+   an obligation with a clock on it, green settled, struck through when voided. */
+.tag-bill-draft {
+  background: #f0f0f5;
+  color: #8a8a96;
+}
+.tag-bill-published {
+  background: #eeeefc;
+  color: #5457d6;
+}
+.tag-bill-settled {
+  background: #e4f7ef;
+  color: #0a9c6b;
+}
+.tag-bill-void {
+  background: #f0f0f5;
+  color: #8a8a96;
+  text-decoration: line-through;
+}
+
+/* Share status: amber still owed, green paid, grey written off, red past due. Here
+   rather than on the bill page because the games history shows them too. */
+.tag-share-unpaid {
+  background: #fdf2e4;
+  color: #c76a10;
+}
+.tag-share-paid {
+  background: #e4f7ef;
+  color: #0a9c6b;
+}
+.tag-share-waived {
+  background: #f0f0f5;
+  color: #8a8a96;
+}
+.tag-share-overdue {
+  background: #fdecec;
+  color: #d64545;
+}
+
+/* capacity meter --------------------------------------------------------- */
+.meter {
+  height: 12rpx;
+  background: #f0f0f5;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-top: 16rpx;
+}
+.meter-fill {
+  height: 100%;
+  background: #5457d6;
+  border-radius: 6rpx;
+  transition: width 0.25s ease;
+}
+.meter-fill.is-full {
+  background: #c76a10;
+}
+.meter-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 21rpx;
+  color: #8a8a96;
+  margin-top: 10rpx;
+}
+
+/* people ----------------------------------------------------------------- */
+.people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+/* Fixed height so the wrap grid keeps a straight bottom edge regardless of
+   whether a person has a gender mark or guests. */
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 112rpx;
+  height: 152rpx;
+}
+.person-avatar {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  background: #f0f0f5;
+  color: #55555f;
+  font-size: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.person-avatar.is-me {
+  background: #5457d6;
+  color: #ffffff;
+}
+.person-name {
+  font-size: 21rpx;
+  color: #55555f;
+  margin-top: 8rpx;
+  max-width: 108rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* forms ------------------------------------------------------------------ */
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.field:last-child {
+  border-bottom: none;
+}
+.field-label {
+  color: #16161d;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+}
+.field-hint {
+  font-size: 21rpx;
+  color: #8a8a96;
+  padding-bottom: 20rpx;
+  line-height: 1.5;
+}
+.field-input {
+  flex: 1;
+  text-align: right;
+}
+/* A field's value is a primary value, so ink — the create form was overriding this
+   locally to exactly that, while other pages got ink-2 for the same thing. */
+.field-value {
+  color: #16161d;
+}
+/* a picker fills the row so its value right-aligns with the inputs above and below */
+.field picker,
+.setting-head picker {
+  flex: 1;
+  text-align: right;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.stepper-btn {
+  width: 56rpx;
+  height: 56rpx;
+  line-height: 52rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: #f0f0f5;
+  color: #16161d;
+  font-size: 34rpx;
+}
+.stepper-btn.is-disabled {
+  color: #c3c3cd;
+}
+.stepper-value {
+  min-width: 48rpx;
+  text-align: center;
+}
+
+/*
+  One block per option: label, its own explanation, then its control.
+
+  Used by the create form and by the manage screen's signup rules, which is why it lives
+  here rather than on a page.
+
+  The create form previously labelled two of these with .section-title, which is a group
+  heading — 23rpx, ink-3, letter-spaced. That put the label of the widest control on the
+  screen at a smaller size and a lighter grey than the .field-label on the stepper rows
+  beside it, inverting the hierarchy, which is why they read as decoration rather than as
+  labels. .setting-label is the same size and colour as .field-label, because it is one.
+
+  Two arrangements, one class: .setting-head puts a compact control on the label's
+  right; a full-width control (a segmented pair) sits underneath instead.
+*/
+.setting {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f5;
+}
+.setting:last-child {
+  border-bottom: none;
+}
+.setting-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+.setting-label {
+  font-size: 27rpx;
+  color: #16161d;
+}
+/* Between the label and its control, not after it: the note explains the choice you
+   are about to make, and trailing it read as a footnote to the row above. */
+.setting-note {
+  display: block;
+  font-size: 21rpx;
+  color: #8a8a96;
+  line-height: 1.5;
+}
+.setting-label + .setting-note {
+  margin: 8rpx 0 16rpx;
+}
+.setting-head + .setting-note {
+  margin-top: 12rpx;
+}
+/* the custom-time fields exist only because of the choice above them, so they are
+   inset under it rather than sitting level with unrelated rows */
+.sub-fields {
+  margin-top: 16rpx;
+  padding: 0 20rpx;
+  border-radius: 12rpx;
+  background: #f8f8fb;
+}
+.sub-fields .field {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #ededf2;
+}
+.sub-fields .field:last-child {
+  border-bottom: none;
+}
+
+.seg {
+  display: flex;
+  background: #f0f0f5;
+  border-radius: 12rpx;
+  padding: 4rpx;
+}
+.seg-item {
+  flex: 1;
+  text-align: center;
+  padding: 14rpx 0;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  color: #55555f;
+}
+.seg-item.is-active {
+  background: #ffffff;
+  color: #5457d6;
+  font-weight: 600;
+}
+
+/* session card (templates/session-card.wxml) ------------------------------ */
+.scard {
+  position: relative;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 26rpx 28rpx 20rpx 34rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 16rpx rgba(22, 22, 29, 0.05);
+}
+
+/* status rail down the leading edge — same palette as the tags, so the two agree */
+.scard-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8rpx;
+  background: #ededf2;
+}
+.scard-rail.r-open {
+  background: #0a9c6b;
+}
+.scard-rail.r-waitlist-only,
+.scard-rail.r-waiting {
+  background: #c76a10;
+}
+.scard-rail.r-full-closed {
+  background: #d64545;
+}
+/* your own signup: a different hue again, because it isn't an invitation to act */
+.scard-rail.r-mine {
+  background: #5457d6;
+}
+/* full with no waitlist, closed, or over: dim the whole card so it reads as
+   unavailable without having to parse the badge */
+.scard.is-unavailable {
+  background: #f8f8fb;
+}
+.scard.is-unavailable .scard-title,
+.scard.is-unavailable .d-day {
+  color: #8a8a96;
+}
+.scard.is-unavailable .scard-when {
+  color: #c3c3cd;
+}
+.scard.is-unavailable .meter-fill {
+  background: #c3c3cd;
+}
+/* a dimmed card keeps its hierarchy, just compressed into greys */
+.scard.is-unavailable .capbox {
+  background: #f4f4f7;
+}
+.scard.is-unavailable .cap-lead {
+  color: #8a8a96;
+}
+.scard.is-unavailable .cap-left,
+.scard.is-unavailable .chip {
+  color: #c3c3cd;
+}
+.scard-top {
+  display: flex;
+  align-items: flex-start;
+}
+/* Typography rather than a filled tile: the box read as a second card nested inside
+   the card, and the day numeral alone is enough of an anchor. */
+.datebox {
+  flex: 0 0 84rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 22rpx;
+}
+.d-month {
+  font-size: 21rpx;
+  color: #8a8a96;
+  line-height: 1.3;
+}
+.d-day {
+  font-size: 46rpx;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -1rpx;
+  color: #16161d;
+}
+.d-week {
+  font-size: 21rpx;
+  color: #8a8a96;
+  line-height: 1.4;
+}
+.scard-main {
+  flex: 1;
+  min-width: 0;
+}
+.scard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+/* level 1 — one of the card's two anchors. Nothing else gets ink at 600. */
+.scard-title {
+  flex: 1;
+  margin-right: 12rpx;
+  font-size: 33rpx;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.2rpx;
+}
+/* level 2 — clock and venue, one line. Demoted to ink-2 so it stops competing with
+   the title, which it used to match exactly. */
+.scard-when {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: #55555f;
+}
+
+/*
+  level 3 — the capacity block.
+
+  An inset rather than a third line of text: "can I get in" is the question the list
+  exists to answer, and a block is distinguishable at a glance where another font size
+  would not be. The tint carries the state, so no text here needs its own colour.
+*/
+.capbox {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 18rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 12rpx;
+  background: #f8f8fb;
+}
+.capbox.is-full {
+  background: #fdf2e4;
+}
+.capbox .meter {
+  flex: 1;
+  margin-top: 0;
+  background: #ededf2;
+}
+/* tabular figures so a column of 3/8, 10/12 doesn't jitter as the list scrolls */
+.cap-lead {
+  flex: 0 0 auto;
+  font-size: 27rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #16161d;
+  font-variant-numeric: tabular-nums;
+}
+/* a bucket reading — "男 4/4 · 女 3/4" — is a sentence, not a figure */
+.cap-lead.is-wide {
+  font-size: 23rpx;
+}
+.capbox.is-full .cap-lead {
+  color: #c76a10;
+}
+.cap-left {
+  flex: 0 0 auto;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.capbox.is-full .cap-left {
+  color: #c76a10;
+}
+
+/* level 4 — filtering tokens and fine print, all one size in ink-3. Cost is the one
+   people actually compare, so it alone steps up to ink-2 and drops its pill. */
+.scard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+.chip {
+  padding: 5rpx 14rpx;
+  border-radius: 8rpx;
+  background: #f4f4f7;
+  color: #8a8a96;
+  font-size: 21rpx;
+}
+.chip-cost {
+  padding-left: 2rpx;
+  background: transparent;
+  color: #55555f;
+  font-weight: 600;
+}
+.scard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-top: 14rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid #f4f4f7;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.foot-l {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.foot-r {
+  flex: 0 0 auto;
+}
+
+/* gender: ♂/♀ glyphs, tinted. Hues chosen to stay clear of the indigo accent and
+   of the red "full" status, both of which sit nearby: a cyan-leaning blue rather
+   than another indigo, and a magenta-leaning pink rather than another red. */
+.gender {
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.gender.male {
+  color: #2b7fd4;
+}
+.gender.female {
+  color: #c93f92;
+}
+
+/* hero ------------------------------------------------------------------- */
+.hero {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx 28rpx 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 16rpx rgba(22, 22, 29, 0.05);
+}
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+/* h1 — the hero's anchor */
+.hero-title {
+  flex: 1;
+  margin-right: 16rpx;
+  font-size: 38rpx;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.2rpx;
+}
+/* body — the facts. Demoted from 30rpx ink, which matched the title's colour and so
+   read as a second title rather than as its supporting line. */
+.hero-when {
+  margin-top: 12rpx;
+  font-size: 27rpx;
+  color: #55555f;
+}
+/* meta — context, plus the club-only badge */
+.hero-where {
+  margin-top: 6rpx;
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+
+/*
+  The page's one job is "can I get in", so the count is the focal point — and it sits
+  in the same tinted block as the list card's, so the two surfaces answer the question
+  in a shape you learn once.
+*/
+.hero-capacity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 26rpx;
+  padding: 22rpx 20rpx 20rpx;
+  border-radius: 16rpx;
+  background: #f8f8fb;
+}
+.hero-capacity.is-full {
+  background: #fdf2e4;
+}
+.cap-count {
+  font-size: 52rpx;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.hero-capacity.is-full .cap-count {
+  color: #c76a10;
+}
+.cap-note {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: #8a8a96;
+}
+.cap-note.is-short {
+  color: #c76a10;
+}
+.hero-capacity .meter {
+  width: 100%;
+  background: #ededf2;
+}
+.hero-sub {
+  margin-top: 16rpx;
+  text-align: center;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+
+/* aligned key/value rows — fixed label column, so values can't go ragged. Label is
+   meta, value is body: the two used to be 26 and 28, near enough to read as one. */
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #ededf2;
+}
+.info-row:last-child {
+  border-bottom: none;
+}
+.info-row .k {
+  flex: 0 0 150rpx;
+  color: #8a8a96;
+  font-size: 23rpx;
+  line-height: 1.6;
+}
+.info-row .v {
+  flex: 1;
+  font-size: 27rpx;
+  color: #55555f;
+  line-height: 1.45;
+}
+.info-row .v.is-link {
+  color: #5457d6;
+}
+
+/* one-line compact card, for things that don't earn a section heading */
+.strip {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2rpx 16rpx rgba(22, 22, 29, 0.05);
+}
+.strip .k {
+  flex: 0 0 150rpx;
+  color: #8a8a96;
+  font-size: 23rpx;
+}
+.strip .v {
+  flex: 1;
+  font-size: 27rpx;
+  color: #16161d;
+}
+
+/* disclosure ------------------------------------------------------------- */
+.disclosure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rpx 0 0;
+}
+.disclosure-label {
+  font-size: 27rpx;
+  color: #55555f;
+}
+/**
+ * Every arrow in the app is the same glyph — › — rotated into place.
+ *
+ * The disclosure toggles used to pair it with ⌃ / ⌄ (U+2303 / U+2304). Those live in
+ * the Miscellaneous Technical block, so they resolve through a different font fallback
+ * than a punctuation glyph does: different weight, different optical size, different
+ * vertical centring. Next to a row of › chevrons the mismatch was obvious. Rotating
+ * one glyph can't drift, and it animates for free.
+ *
+ * A row that expands in place points down, then up. A row that navigates away points
+ * right. That distinction is now consistent — the club rows used to expand in place
+ * while pointing right.
+ */
+.chev {
+  display: inline-block;
+  color: #c3c3cd;
+  font-size: 26rpx;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+.chev.is-down {
+  transform: rotate(90deg);
+}
+.chev.is-up {
+  transform: rotate(-90deg);
+}
+
+/* buttons ---------------------------------------------------------------- */
+.cta-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1rpx solid #f0f0f5;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+/* Works on both <view> and <button>. The CTA bar uses <button> throughout so a
+   share button can sit beside a join button without their box models fighting. */
+.btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  border-radius: 14rpx;
+  font-size: 30rpx;
+  font-weight: 400;
+  background: #5457d6;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+.btn::after {
+  border: none;
+}
+.btn-secondary {
+  background: #f0f0f5;
+  color: #16161d;
+}
+.btn-danger {
+  background: #fdecec;
+  color: #d64545;
+}
+.btn.is-disabled {
+  background: #f0f0f5;
+  color: #c3c3cd;
+}
+
+
+/* misc ------------------------------------------------------------------- */
+.empty {
+  text-align: center;
+  color: #8a8a96;
+  padding: 120rpx 0;
+}
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  background: #fdf2e4;
+  color: #c76a10;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 23rpx;
+  line-height: 1.5;
+  margin-bottom: 24rpx;
+}
+/* red when the thing being said has already gone wrong — an overdue share — rather
+   than merely needing attention */
+.notice.is-stop {
+  background: #fdecec;
+  color: #d64545;
+}
+.notice-cta {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
