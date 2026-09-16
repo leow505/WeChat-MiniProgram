@@ -6,19 +6,15 @@
     <view class="card-row"><text class="dim">{{ev.count_text}}</text></view>
   </view>
 
-  <!-- === court booking ================================================ -->
+  <!--
+    === courts ========================================================
+    Writing the labels down *is* the booking, so there is no separate status to keep
+    in step: a session with courts named is booked, one without is not. The segmented
+    control that used to sit here was a second source of truth, and the one an
+    organizer forgot — leaving "not booked" on screen above two named courts.
+  -->
   <view class="card">
-    <view class="section-title">{{t.courtBooking}}</view>
-
-    <view class="seg">
-      <view
-        wx:for="{{statusOptions}}"
-        wx:key="value"
-        class="seg-item {{courtStatus === item.value ? 'is-active' : ''}}"
-        data-value="{{item.value}}"
-        bindtap="setStatus"
-      >{{item.label}}</view>
-    </view>
+    <view class="section-title">{{t.courts}}</view>
 
     <view class="field">
       <text class="field-label">{{t.courtLabelsField}}</text>

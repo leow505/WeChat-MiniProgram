@@ -524,7 +524,7 @@ const actions = {
       my_share_status: myShare ? myShare.status : '',
       my_share_claimed: !!(myShare && myShare.player_claimed_paid_at),
       my_share_overdue: rules.isShareOverdue(myShare, bill ? bill.due_at : 0),
-      courts_visible: ev.courts_visible_to === 'ALL' || !!myState || manage,
+      courts_visible: rules.courtsVisibleTo(ev, myState, manage),
     })
   },
 
@@ -810,7 +810,6 @@ const actions = {
   'event.setCourts'(db, payload) {
     const {
       eventId,
-      court_status,
       court_assignments,
       court_count,
       capacity,
@@ -830,9 +829,8 @@ const actions = {
         note: c.note || '',
         booked_with_membership_openid: c.booked_with_membership_openid || null,
       }))
-    if (['NOT_BOOKED', 'PENDING', 'CONFIRMED'].indexOf(court_status) !== -1) {
-      ev.court_status = court_status
-    }
+    // The labels are the booking, so the status follows them. §3.5
+    ev.court_status = ev.court_assignments.length ? 'CONFIRMED' : 'NOT_BOOKED'
     if (court_count != null) ev.court_count = Math.max(0, Number(court_count) || 0)
 
     const balanced = rules.isBalanced(ev)

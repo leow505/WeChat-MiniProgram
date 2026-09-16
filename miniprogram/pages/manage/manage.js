@@ -4,7 +4,6 @@ const present = require('../../utils/present')
 const fmt = require('../../utils/format')
 const rules = require('../../utils/rules')
 
-const STATUSES = ['NOT_BOOKED', 'PENDING', 'CONFIRMED']
 // Same ladder the create form offers, so a session's rules read the same in both
 // places. 0 means "right up to the start", which maps to AT_EVENT_START.
 const WITHDRAW_HOURS = [0, 2, 6, 12, 24]
@@ -15,13 +14,11 @@ Page({
     eventId: '',
     ev: null,
     booking: null,
-    statusOptions: [],
     courtText: '',
     courtCount: 0,
     capacity: 0,
     maleSlots: 0,
     femaleSlots: 0,
-    courtStatus: 'NOT_BOOKED',
     balanced: false,
     coverageText: '',
     totalCost: '',
@@ -47,7 +44,6 @@ Page({
     wx.setNavigationBarTitle({ title: t.manageGame })
     this.setData({
       t,
-      statusOptions: STATUSES.map((v) => ({ value: v, label: t['cs' + v] })),
       withdrawLabels: WITHDRAW_HOURS.map((h) =>
         h === 0 ? t.untilStart : i18n.t('hours', { n: h })
       ),
@@ -88,7 +84,6 @@ Page({
           }),
           balanced: raw.roster_mode === 'GENDER_BALANCED',
           courtText: (raw.court_assignments || []).map((c) => c.label).join(', '),
-          courtStatus: raw.court_status,
           courtCount,
           capacity: raw.capacity,
           maleSlots: cap.male,
@@ -153,10 +148,6 @@ Page({
     this.setData({ courtText: e.detail.value })
   },
 
-  setStatus(e) {
-    this.setData({ courtStatus: e.currentTarget.dataset.value })
-  },
-
   step(e) {
     const { k, d } = e.currentTarget.dataset
     const delta = Number(d)
@@ -186,7 +177,6 @@ Page({
 
     const payload = {
       eventId: this.data.eventId,
-      court_status: this.data.courtStatus,
       court_assignments: labels.map((label) => ({ label })),
       court_count: this.data.courtCount,
       total_cost_minor: this.data.totalCost === ''

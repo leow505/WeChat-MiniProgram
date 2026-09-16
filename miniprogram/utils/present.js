@@ -109,6 +109,20 @@ function eventCard(ev, t) {
     when_where: [fmt.timeRange(ev.start_local, ev.end_local), ev.venue_snapshot.name]
       .filter(Boolean)
       .join('  ·  '),
+    /**
+     * Which court, for somebody holding a seat. §3.5
+     *
+     * "Where do I go" is the question on the way to the venue, and it used to need a
+     * tap into the session to answer. Only shown to a seat holder, which is the same
+     * gate the detail page uses — a waitlisted player has nowhere to go yet, and a
+     * stranger scrolling a club's list has no business knowing the court.
+     */
+    courts_text: (function () {
+      // No "Courts" prefix: the tinted pill says what it is, and "Courts Court 3"
+      // reads as a stutter in English.
+      const labels = rules.courtLabelsFor(ev, ev.my_state, false)
+      return labels.length ? labels.join(' · ') : ''
+    })(),
     chips: [
       { key: 'fmt', label: t['fmt' + ev.format_template] || '' },
       {

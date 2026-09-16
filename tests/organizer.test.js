@@ -207,6 +207,33 @@ const detail = (id) => call('event.detail', { eventId: id })
   is('roster fits inside it', ev.roster_count <= 2, true)
   is('and fewer people hold seats than before', ev.roster.length < before.roster.length, true)
 
+  // --- the labels are the booking (§3.5) -----------------------------------
+  // There is no status to keep in step: courts named means booked, none means not.
+  {
+    let ev = await detail('e_thu')
+    await call('event.setCourts', {
+      eventId: 'e_thu',
+      court_assignments: [{ label: 'Court 3' }, { label: 'Court 5' }],
+    })
+    ev = await detail('e_thu')
+    is('writing labels books the courts', ev.court_status, 'CONFIRMED')
+    is('and they are what was written', ev.court_assignments.map((c) => c.label), ['Court 3', 'Court 5'])
+    is('the organizer sees them', ev.courts_visible, true)
+
+    await call('event.setCourts', { eventId: 'e_thu', court_assignments: [] })
+    ev = await detail('e_thu')
+    is('clearing them unbooks the courts', ev.court_status, 'NOT_BOOKED')
+
+    // A status sent by a client is not a second source of truth.
+    await call('event.setCourts', {
+      eventId: 'e_thu',
+      court_status: 'CONFIRMED',
+      court_assignments: [],
+    })
+    ev = await detail('e_thu')
+    is('a claimed status without labels is ignored', ev.court_status, 'NOT_BOOKED')
+  }
+
   // --- a club that plays on somebody's card asks on the join tap (§3.8) ----
   // The membership form is only open to members, so a REQUIRED club could not be
   // joined at all unless the name travels with the join itself.

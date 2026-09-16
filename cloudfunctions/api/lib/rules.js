@@ -172,6 +172,30 @@ function isLateWithdrawal(ev, now = Date.now(), lateWindowHours = 12) {
 }
 
 /**
+ * Who sees the court labels. §3.5
+ *
+ * `courts_visible_to: 'ROSTER'` means what it says: a seat, not a place in the
+ * queue. The gate used to be `!!my_state`, which let the waitlist read them too —
+ * people who may never play, and who will see the labels the moment they are
+ * promoted anyway. Whoever runs the session always sees them, because they are the
+ * one who wrote them down.
+ */
+function courtsVisibleTo(ev, myState, canManage) {
+  if (!ev) return false
+  if (canManage) return true
+  if (ev.courts_visible_to === 'ALL') return true
+  return myState === 'ROSTER'
+}
+
+/** The court labels a viewer should be shown, which is none unless they may see them. */
+function courtLabelsFor(ev, myState, canManage) {
+  if (!courtsVisibleTo(ev, myState, canManage)) return []
+  return ((ev && ev.court_assignments) || [])
+    .map((c) => (c && c.label ? String(c.label) : ''))
+    .filter(Boolean)
+}
+
+/**
  * Exact even split of an integer amount. §9.2
  *
  * Returns the per-unit base plus the remainder that has to be handed out one minor
@@ -382,6 +406,8 @@ module.exports = {
   isJoinable,
   canWithdraw,
   isLateWithdrawal,
+  courtsVisibleTo,
+  courtLabelsFor,
   planCapacityBump,
   splitEvenly,
   perPersonPreview,

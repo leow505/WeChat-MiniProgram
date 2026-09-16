@@ -136,6 +136,26 @@ function run(name, r, f, n) {
   is('after end is completed', r.statusOf(open, open.end_at + HOUR), 'COMPLETED')
   is('cancelled short-circuits', r.statusOf(Object.assign({}, open, { lifecycle: 'CANCELLED' }), now), 'CANCELLED')
 
+  // --- who sees the court labels (§3.5) ------------------------------------
+  // 'ROSTER' means a seat, not a place in the queue: somebody waiting has nowhere to
+  // go yet, and will see the labels the moment they are promoted.
+  const booked = Object.assign({}, open, {
+    courts_visible_to: 'ROSTER',
+    court_assignments: [{ label: 'Court 3' }, { label: 'Court 5' }],
+  })
+  is('a seat holder sees them', r.courtsVisibleTo(booked, 'ROSTER', false), true)
+  is('the waitlist does not', r.courtsVisibleTo(booked, 'WAITLIST', false), false)
+  is('a stranger does not', r.courtsVisibleTo(booked, null, false), false)
+  is('whoever runs it always does', r.courtsVisibleTo(booked, null, true), true)
+  is(
+    'a session that shows them to everyone shows them to everyone',
+    r.courtsVisibleTo(Object.assign({}, booked, { courts_visible_to: 'ALL' }), null, false),
+    true
+  )
+  is('the labels come back in order', r.courtLabelsFor(booked, 'ROSTER', false), ['Court 3', 'Court 5'])
+  is('and not at all to somebody who may not see them', r.courtLabelsFor(booked, null, false), [])
+  is('nothing to show before any are written', r.courtLabelsFor(open, 'ROSTER', false), [])
+
   // --- format templates ----------------------------------------------------
   is('mixed doubles on 2 courts', f.capacityFor('MIXED_DOUBLES', 2), {
     capacity: 8,

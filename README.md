@@ -54,10 +54,10 @@ offline. It is not a stub of a few endpoints.
 ## Verify
 
 ```bash
-node tests/rules.test.js       # 280 assertions, against both copies of the pure logic
+node tests/rules.test.js       # 296 assertions, against both copies of the pure logic
 node tests/bills.test.js       #  90 assertions, the settlement flow and money maths
-node tests/organizer.test.js   #  50 assertions, a live session's rules and club money
-node tests/i18n.test.js        # 397 checks, every label key exists and is rendered
+node tests/organizer.test.js   #  55 assertions, a live session's rules and club money
+node tests/i18n.test.js        # 393 checks, every label key exists and is rendered
 ```
 
 No framework, no install. What each one protects:

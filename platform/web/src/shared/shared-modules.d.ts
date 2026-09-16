@@ -55,6 +55,10 @@ declare module '@shared/rules' {
     seatsFor(guests: unknown[]): number
     joinDeadlineAt(event: EventLike): number
     withdrawDeadlineAt(event: EventLike): number
+    /** Who may see the court labels: a seat holder, whoever runs it, or everyone. */
+    courtsVisibleTo(event: EventLike, myState: string | null, canManage: boolean): boolean
+    /** Those labels, or none when the viewer may not see them. */
+    courtLabelsFor(event: EventLike, myState: string | null, canManage: boolean): string[]
     /** Even split of minor units: `{ base, remainder, units }`. */
     splitEvenly(
       totalMinor: number,

@@ -439,8 +439,8 @@ async function detail({ eventId }, openid) {
     my_share_status: myShare ? myShare.status : '',
     my_share_claimed: !!(myShare && myShare.player_claimed_paid_at),
     my_share_overdue: rules.isShareOverdue(myShare, bill ? bill.due_at : 0),
-    // Court labels are gated to people actually on the list. §3.5
-    courts_visible: ev.courts_visible_to === 'ALL' || !!myState || canManage,
+    // Court labels are gated to people actually holding a seat. §3.5
+    courts_visible: rules.courtsVisibleTo(ev, myState, canManage),
   })
 }
 
@@ -759,7 +759,7 @@ async function updateRules(payload, openid) {
  * than planned. §3.5
  */
 async function setCourts(payload, openid) {
-  const { eventId, court_status, court_assignments, court_count, capacity, capacity_by_gender, total_cost_minor } = payload
+  const { eventId, court_assignments, court_count, capacity, capacity_by_gender, total_cost_minor } = payload
   const ev = await getOrNull('events', eventId)
   if (!ev) fail('NOT_FOUND')
   await requireManager(ev, openid)
@@ -777,9 +777,13 @@ async function setCourts(payload, openid) {
 
   const data = {
     court_assignments: assignments,
-    court_status: ['NOT_BOOKED', 'PENDING', 'CONFIRMED'].indexOf(court_status) !== -1
-      ? court_status
-      : ev.court_status,
+    /**
+     * The labels are the booking. Writing "Court 3, Court 5" is what having courts
+     * means, so the status follows them rather than being a second thing to keep in
+     * step — an organizer who booked and forgot to flip a segmented control used to
+     * leave everyone reading "not booked" under two named courts.
+     */
+    court_status: assignments.length ? 'CONFIRMED' : 'NOT_BOOKED',
     updated_at: Date.now(),
   }
   if (court_count != null) data.court_count = Math.max(0, Number(court_count) || 0)

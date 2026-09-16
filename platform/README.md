@@ -105,10 +105,10 @@ thing checking that the two copies of the shared rules still agree. Run those to
 
 ```bash
 cd ..
-node tests/rules.test.js       # 280  pure logic, against BOTH copies
+node tests/rules.test.js       # 296  pure logic, against BOTH copies
 node tests/bills.test.js       #  90  settlement flow and money maths
-node tests/organizer.test.js   #  50  a live session's rules and club money
-node tests/i18n.test.js        # 397  every label exists, and is rendered
+node tests/organizer.test.js   #  55  a live session's rules and club money
+node tests/i18n.test.js        # 393  every label exists, and is rendered
 ```
 
 Server tests need a database and will truncate it. They default to

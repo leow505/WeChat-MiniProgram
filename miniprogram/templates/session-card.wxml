@@ -42,6 +42,8 @@
           <text class="tag tag-{{badge_class}}">{{badge_text}}</text>
         </view>
         <text class="scard-when">{{when_where}}</text>
+        <!-- your court, once there is one: the last thing you need before setting off -->
+        <text wx:if="{{courts_text}}" class="scard-court">{{courts_text}}</text>
       </view>
     </view>
 

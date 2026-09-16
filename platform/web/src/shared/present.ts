@@ -75,6 +75,21 @@ export function money(minor: number, currency?: string): string {
 }
 
 /**
+ * The courts a viewer may be shown. §3.5
+ *
+ * Empty unless they hold a seat, run the session, or the session shows its courts to
+ * everyone — the same gate the mini program and the server apply, because it is the
+ * same rule module.
+ */
+export function courtLabels(
+  event: EventCard | EventDetail,
+  myState?: string | null,
+  canManage = false
+): string[] {
+  return rules.courtLabelsFor(event as never, myState ?? null, canManage)
+}
+
+/**
  * The headline "what one person pays" above a split, in minor units.
  *
  * A court fee rarely divides evenly in whole cents, so the exact split hands the

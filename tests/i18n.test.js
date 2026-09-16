@@ -98,7 +98,6 @@ const FAMILIES = [
   ['role', ['OWNER', 'ADMIN', 'MEMBER']],
   ['jp', ['OPEN', 'APPROVAL']],
   ['mp', ['NOT_REQUIRED', 'REQUESTED', 'REQUIRED']],
-  ['cs', ['NOT_BOOKED', 'PENDING', 'CONFIRMED']],
   ['lv', ['ANY', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED']],
   // Bill and share states, §9.1 — looked up as t['bl' + status] / t['ss' + status].
   ['bl', ['DRAFT', 'PUBLISHED', 'SETTLED', 'VOID']],

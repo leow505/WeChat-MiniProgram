@@ -24,6 +24,7 @@ import SeatMeter from '@/components/SeatMeter.vue'
 import { t, tf } from '@/shared/i18n'
 import {
   advisory,
+  courtLabels,
   dateChip,
   formatLabel,
   money,
@@ -69,6 +70,10 @@ const tone = computed(() => (event.value ? statusTone(event.value) : 'plain'))
 // Resolved here rather than in the template: passing the locale ref through a
 // call in the template relies on unwrapping and silently fell back to Chinese.
 const formatText = computed(() => formatLabel(event.value?.format_template, t.value))
+/** The court to walk to, for somebody who actually has a seat. §3.5 */
+const courts = computed(() =>
+  event.value ? courtLabels(event.value, event.value.my_state, event.value.can_manage) : []
+)
 
 const guestsChanged = computed(
   () => joined.value && guestCount.value !== (event.value?.my_guests?.length ?? 0)
@@ -286,6 +291,11 @@ watch(eventId, load)
           <div v-if="event.organizer_name" class="fact">
             <span class="fact__label">{{ t.organizerLabel }}</span>
             <span class="fact__value">{{ event.organizer_name }}</span>
+          </div>
+          <!-- Which court, once there is one and you hold a seat. §3.5 -->
+          <div v-if="courts.length" class="fact">
+            <span class="fact__label">{{ t.courts }}</span>
+            <span class="fact__value">{{ courts.join(' · ') }}</span>
           </div>
           <div v-if="event.cost_estimate_per_person" class="fact">
             <span class="fact__label">{{ t.estimatedPerPerson }}</span>

@@ -34,6 +34,12 @@ const maxGuests = ref(0)
 const minPlayers = ref(0)
 const withdrawHours = ref(6)
 const courtCount = ref(0)
+/**
+ * The court labels, comma-separated as they are typed on the mini program. Writing
+ * them down is what books the courts (§3.5) — the server derives the status from
+ * them — so without this field a web organizer could never clear "not booked".
+ */
+const courtLabels = ref('')
 
 const removable = computed(() =>
   (event.value?.roster ?? []).filter((person) => person.openid !== event.value?.creator_openid)
@@ -61,6 +67,10 @@ async function load(): Promise<void> {
     minPlayers.value = detail.min_players ?? 0
     withdrawHours.value = detail.withdraw_hours_before ?? 6
     courtCount.value = detail.court_count ?? 0
+    courtLabels.value = (detail.court_assignments ?? [])
+      .map((court) => court.label)
+      .filter(Boolean)
+      .join(', ')
     if (!detail.can_manage) {
       // Not the organizer: the server would refuse anyway, but do not present
       // controls that cannot work.
@@ -101,7 +111,15 @@ async function saveRules(): Promise<void> {
 async function saveCourts(): Promise<void> {
   busy.value = true
   try {
-    await call('event.setCourts', { eventId: eventId.value, court_count: courtCount.value })
+    await call('event.setCourts', {
+      eventId: eventId.value,
+      court_count: courtCount.value,
+      court_assignments: courtLabels.value
+        .split(/[,，]/)
+        .map((label) => label.trim())
+        .filter(Boolean)
+        .map((label) => ({ label })),
+    })
     await load()
     toast.show(t.value.courtsSaved)
   } catch (error) {
@@ -182,6 +200,11 @@ onMounted(async () => {
         </span>
       </div>
       <div class="card stack">
+        <label class="field">
+          <span class="field__label">{{ t.courtLabelsField }}</span>
+          <input v-model="courtLabels" class="input" type="text" placeholder="Court 3, Court 5" />
+          <span class="hint">{{ t.courtLabelsHint }}</span>
+        </label>
         <label class="field">
           <span class="field__label">{{ t.courtsLabel }}</span>
           <input
