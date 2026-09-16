@@ -124,20 +124,24 @@ function eventCard(ev, t) {
     // A template only sees the data passed to it, so the label travels with the value.
     courts_label: t.courts,
     chips: [
-      { key: 'fmt', label: t['fmt' + ev.format_template] || '' },
       /**
-       * How many courts, which is public: it follows from the format and the player
-       * count, and without it a player had to work backwards from the slots to guess.
+       * Format and court count in one chip, because they are one fact: the capacity
+       * is derived from them together, and the create form has always phrased it that
+       * way — "双打 × 2 片场". A standalone count chip sat between the format and the
+       * level as a third unrelated token, and read as clutter rather than as an
+       * answer.
        *
-       * Dropped when the courts themselves are on the card, where the block above
-       * already answers it — "Court 3 · Court 5" and "2 courts" in the same card is
-       * the same fact twice. The detail page shows both, since an organizer can name
-       * fewer courts than they booked and that gap is worth seeing.
+       * The count matters to a player: without it, a session whose courts are not
+       * named yet left them working backwards from the slots to guess whether two
+       * courts had been booked or three.
        */
       {
-        key: 'courts',
-        label:
-          ev.court_count && !courtsText ? i18n.t('courtsCount', { n: ev.court_count }) : '',
+        key: 'fmt',
+        label: (function () {
+          const name = t['fmt' + ev.format_template] || ''
+          if (!name) return ''
+          return ev.court_count ? i18n.t('fmtOnCourts', { fmt: name, n: ev.court_count }) : name
+        })(),
       },
       {
         key: 'lv',
