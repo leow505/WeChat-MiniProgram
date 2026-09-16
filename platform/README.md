@@ -96,7 +96,7 @@ demo organizer.
 ```bash
 npm run verify           # tests + typecheck + build + lint. The bar for a change.
 
-npm run test:server      # 136 — against a real PostgreSQL
+npm run test:server      # 137 — against a real PostgreSQL
 npm run test:web         #  57 — helpers, invite page in jsdom, labels, contrast
 ```
 
@@ -106,9 +106,9 @@ thing checking that the two copies of the shared rules still agree. Run those to
 ```bash
 cd ..
 node tests/rules.test.js       # 296  pure logic, against BOTH copies
-node tests/bills.test.js       #  90  settlement flow and money maths
-node tests/organizer.test.js   #  55  a live session's rules and club money
-node tests/i18n.test.js        # 393  every label exists, and is rendered
+node tests/bills.test.js       # 118  settlement flow and money maths
+node tests/organizer.test.js   #  61  a live session's rules and club money
+node tests/i18n.test.js        # 398  every label exists, and is rendered
 ```
 
 Server tests need a database and will truncate it. They default to

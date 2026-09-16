@@ -1,0 +1,64 @@
+/*
+  A row per debt.
+
+  Shaped like the session cards it refers to rather than like a settings list: the
+  amount is the reason the page exists, so it gets the figure treatment on the right,
+  and the session it belongs to reads as the label on the left. Overdue is carried by
+  the tag's colour — the same red the bill page uses for the same state — because the
+  distinction that matters here is late versus merely unpaid.
+*/
+.owe-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 16rpx rgba(22, 22, 29, 0.05);
+}
+.owe-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.owe-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.owe-title {
+  flex: 0 1 auto;
+  font-size: 27rpx;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.owe-when {
+  margin-top: 6rpx;
+  font-size: 21rpx;
+  color: #55555f;
+}
+.owe-due {
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #8a8a96;
+}
+.owe-money {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+/* tabular figures, so a column of amounts lines up rather than jittering */
+.owe-amount {
+  font-size: 33rpx;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.owe-currency {
+  font-size: 21rpx;
+  color: #8a8a96;
+}

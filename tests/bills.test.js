@@ -279,6 +279,31 @@ function refuses(label, code, promise) {
   await refuses('cannot publish over a void bill', 'BILL_VOID',
     call('bill.publish', { eventId: 'e_played', total_minor: 100 }))
 
+  // --- what you owe, across sessions (§9.4) --------------------------------
+  // The list of debts sorts by whether they are late, so `event.mine` has to say —
+  // which needs the bill each share belongs to: the clock starts at publication.
+  {
+    const mine = await call('event.mine', {})
+    const owed = mine.past.concat(mine.upcoming).filter((ev) => ev.my_share_status === 'UNPAID')
+    is('one debt, on the session with the published bill', owed.length, 1)
+    is('with the amount owed on it', owed[0].my_share_minor, 1200)
+    is('a due date from the bill, not from the session', owed[0].my_share_due_at > 0, true)
+    is('and it is past, so the row reads as overdue', owed[0].my_share_overdue, true)
+    is('the summary agrees with the rows', mine.owing.count, owed.length)
+    is('and names the total, one currency being in play', mine.owing.total_minor, 1200)
+
+    // Settled by the club's owner — a player cannot mark their own share paid — and
+    // then both the summary and the list are empty.
+    await mock.dispatch(
+      'bill.markPaid',
+      { eventId: 'e_owed', targetOpenid: mock.ME, paid: true },
+      { actorId: 'u_chen' }
+    )
+    const after = await call('event.mine', {})
+    is('nothing owed once it is paid', after.owing.count, 0)
+    is('and nothing to list', after.past.filter((ev) => ev.my_share_status === 'UNPAID').length, 0)
+  }
+
   console.log(`\n${pass} passed, ${fail} failed`)
   process.exit(fail ? 1 : 0)
 })().catch((err) => {

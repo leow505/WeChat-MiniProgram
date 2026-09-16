@@ -106,15 +106,33 @@ async function mineList(_payload, openid) {
     owedByEvent[s.event_id] = s
   })
 
+  /**
+   * Whether each of those debts is late, which needs the bill it belongs to: the clock
+   * starts at publication, not at play (§9.3). One read for every session owed on, so
+   * the list of what you owe can say which ones are overdue instead of leaving that to
+   * be discovered a session at a time.
+   */
+  const owedBills = {}
+  const owedIds = Object.keys(owedByEvent)
+  if (owedIds.length) {
+    const bills = await db.collection('event_bills').where({ _id: _.in(owedIds) }).get()
+    bills.data.forEach((b) => {
+      owedBills[b._id] = b
+    })
+  }
+
   const upcoming = []
   const past = []
   rows.data.forEach((s) => {
     const ev = byId[s.event_id]
     if (!ev) return
     const owed = owedByEvent[s.event_id]
+    const bill = owed ? owedBills[s.event_id] : null
     const c = Object.assign(card(ev, s), {
       my_share_minor: owed ? owed.share_minor : 0,
       my_share_status: owed ? owed.status : '',
+      my_share_due_at: bill ? bill.due_at || 0 : 0,
+      my_share_overdue: !!owed && rules.isShareOverdue(owed, bill ? bill.due_at : 0),
     })
     if (ev.end_at > now) upcoming.push(c)
     else past.push(c)

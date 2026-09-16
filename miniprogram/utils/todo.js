@@ -60,8 +60,8 @@ function build(clubs, hosting, mine, t) {
           }),
       detail: '',
       action: t.viewBill,
-      // Several unpaid shares have no single destination; the games tab lists them.
-      url: owing.event_id ? `/pages/bill/bill?id=${owing.event_id}` : '',
+      // One destination whatever the count: the list names each session and links on.
+      url: '/pages/owing/owing',
     })
   }
 

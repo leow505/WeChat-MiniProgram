@@ -1,0 +1,30 @@
+<view class="page">
+
+  <view wx:if="{{summary}}" class="notice is-stop">{{summary}}</view>
+
+  <view wx:if="{{!loading && rows.length === 0}}" class="empty">{{t.owingEmpty}}</view>
+
+  <!-- One row per debt: what it was for, what it costs, and the way to settle it. -->
+  <view
+    wx:for="{{rows}}"
+    wx:key="_id"
+    class="owe-row"
+    data-id="{{item._id}}"
+    bindtap="openBill"
+  >
+    <view class="owe-main">
+      <view class="owe-head">
+        <text class="owe-title">{{item.title}}</text>
+        <text class="tag tag-{{item.status_class}}">{{item.status_text}}</text>
+      </view>
+      <text class="owe-when">{{item.when_where}}</text>
+      <text wx:if="{{item.due_text}}" class="owe-due">{{item.due_text}}</text>
+    </view>
+    <view class="owe-money">
+      <text class="owe-amount">{{item.amount_text}}</text>
+      <text class="owe-currency">{{item.currency_code}}</text>
+    </view>
+    <text class="chev">›</text>
+  </view>
+
+</view>

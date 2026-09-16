@@ -9,7 +9,8 @@
     "pages/club/club",
     "pages/manage/manage",
     "pages/bill/bill",
-    "pages/hosting/hosting"
+    "pages/hosting/hosting",
+    "pages/owing/owing"
   ],
   "window": {
     "navigationBarTitleText": "约球",

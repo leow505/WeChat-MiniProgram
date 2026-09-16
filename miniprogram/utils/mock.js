@@ -312,10 +312,14 @@ const actions = {
         const ev = db.events[s.event_id]
         if (!ev) return
         const mine = owedByEvent[s.event_id]
+        const bill = mine ? db.event_bills[s.event_id] : null
         const card = Object.assign(eventCard(db, ev), {
           my_state: s.state,
           my_share_minor: mine ? mine.share_minor : 0,
           my_share_status: mine ? mine.status : '',
+          // Late is measured from publication, not from play. §9.3
+          my_share_due_at: bill ? bill.due_at || 0 : 0,
+          my_share_overdue: !!mine && rules.isShareOverdue(mine, bill ? bill.due_at : 0),
         })
         ;(ev.end_at > t ? upcoming : past).push(card)
       })

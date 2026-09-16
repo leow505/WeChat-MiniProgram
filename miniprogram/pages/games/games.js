@@ -26,7 +26,6 @@ Page({
      */
     tab: 'MINE',
     owing: '',
-    owingEventId: '',
   },
 
   /**
@@ -97,7 +96,6 @@ Page({
           hasClubs: clubs.joined.some((c) => c.my_status === 'ACTIVE'),
           loading: false,
           owing: this.owingLine(mine.owing, t),
-          owingEventId: (mine.owing && mine.owing.event_id) || '',
           // Nothing joined yet: land on the segment that has something in it, rather
           // than on an empty list the newcomer has to work out how to leave.
           tab: mineCards.length ? this.data.tab : 'OPEN',
@@ -172,12 +170,14 @@ Page({
    * One outstanding share goes straight to its settlement screen. Several can't, so
    * they open the history where all of them are listed.
    */
+  /**
+   * Always the list, even for a single debt: it names the session, the amount and
+   * whether it is late, and links on to the split. This used to switch tabs and expand
+   * the history for anything other than one share, which left the reader to find the
+   * sessions the notice was about.
+   */
   openOwing() {
-    if (this.data.owingEventId) {
-      wx.navigateTo({ url: `/pages/bill/bill?id=${this.data.owingEventId}` })
-      return
-    }
-    this.setData({ tab: 'MINE', showPast: true })
+    wx.navigateTo({ url: '/pages/owing/owing' })
   },
 
   goClubs() {
