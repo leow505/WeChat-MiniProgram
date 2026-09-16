@@ -2,7 +2,6 @@ const api = require('../../utils/api')
 const i18n = require('../../utils/i18n')
 const present = require('../../utils/present')
 const fmt = require('../../utils/format')
-const rules = require('../../utils/rules')
 
 // Same ladder the create form offers, so a session's rules read the same in both
 // places. 0 means "right up to the start", which maps to AT_EVENT_START.
@@ -21,9 +20,6 @@ Page({
     femaleSlots: 0,
     balanced: false,
     coverageText: '',
-    totalCost: '',
-    perPersonText: '',
-    currency: 'CAD',
     // signup rules, editable after posting (§3.1, §3.2, §3.4)
     minPlayers: 0,
     maxGuests: 0,
@@ -90,10 +86,6 @@ Page({
           femaleSlots: cap.female,
           booking,
           coverageText: this.coverageText(booking, courtCount, t),
-          totalCost:
-            fmt.toMajorInput(raw.cost_total_minor, raw.currency || 'CAD') ||
-            this.data.totalCost,
-          currency: raw.currency || 'CAD',
           minPlayers: raw.min_players || 0,
           maxGuests: raw.max_guests_per_member || 0,
           deadlineRule: raw.join_deadline_rule || 'AT_EVENT_START',
@@ -105,7 +97,6 @@ Page({
           // The note about reopening is only worth saying once signup has closed.
           signupClosed: raw.status === 'SIGNUP_CLOSED' || raw.status === 'FULL_CLOSED',
         })
-        this.refreshPerPerson()
       })
       .catch((err) => wx.showToast({ title: i18n.errText(err), icon: 'none' }))
   },
@@ -118,29 +109,6 @@ Page({
     return c.ok
       ? i18n.t('coverageOk', { courts: courtCount, needed: c.needed, have: c.have })
       : i18n.t('coverageShort', { needed: c.needed, have: c.have })
-  },
-
-  onTotalCost(e) {
-    this.setData({ totalCost: e.detail.value }, () => this.refreshPerPerson())
-  },
-
-  /**
-   * Indicative only: it divides by seats taken right now, so it moves as people
-   * join or drop. The binding split happens when the bill is published. §9.2
-   */
-  refreshPerPerson() {
-    const minor = fmt.toMinor(this.data.totalCost, this.data.currency)
-    const seats = (this.data.ev && this.data.ev.roster_count) || 0
-    if (!minor || !seats) {
-      this.setData({ perPersonText: '' })
-      return
-    }
-    const per = rules.perPersonPreview(minor, seats)
-    this.setData({
-      perPersonText: i18n.t('perPersonApprox', {
-        amount: fmt.money(per, this.data.currency),
-      }),
-    })
   },
 
   // --- courts ---------------------------------------------------------------
@@ -179,9 +147,6 @@ Page({
       eventId: this.data.eventId,
       court_assignments: labels.map((label) => ({ label })),
       court_count: this.data.courtCount,
-      total_cost_minor: this.data.totalCost === ''
-        ? null
-        : fmt.toMinor(this.data.totalCost, this.data.currency),
     }
 
     api

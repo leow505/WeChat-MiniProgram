@@ -380,24 +380,39 @@ page {
   border-bottom: none;
 }
 
+/*
+  A segmented control: two or three short mutually-exclusive choices.
+
+  The track is the affordance. It used to be #f0f0f5 — the same fill as an inert tag,
+  and four hundredths of a step from the page background — so on a page it vanished
+  and inside a card the selected half's white pill was the only thing visible, which
+  made the other halves read as stray labels rather than the rest of a control. The
+  track is now a step darker than any surface it sits on, and the selected half is
+  lifted out of it with a shadow rather than only recoloured.
+
+  Long labels do not fit here; those want .optlist below.
+*/
 .seg {
   display: flex;
-  background: #f0f0f5;
-  border-radius: 12rpx;
-  padding: 4rpx;
+  gap: 4rpx;
+  background: #e6e6ee;
+  border-radius: 14rpx;
+  padding: 5rpx;
 }
 .seg-item {
   flex: 1;
   text-align: center;
-  padding: 14rpx 0;
+  padding: 16rpx 0;
   border-radius: 10rpx;
   font-size: 26rpx;
   color: #55555f;
+  transition: background-color 0.18s ease;
 }
 .seg-item.is-active {
   background: #ffffff;
   color: #5457d6;
   font-weight: 600;
+  box-shadow: 0 2rpx 6rpx rgba(22, 22, 29, 0.1);
 }
 /* An option that exists but cannot be picked yet, because something else has to be
    set up first. Shown rather than hidden: an option that vanishes reads as a missing
@@ -405,6 +420,156 @@ page {
    legible rather than dropping to a disabled grey. */
 .seg-item.is-disabled {
   color: #a8a8b3;
+}
+
+/*
+  A single-select list, for the same job as .seg where the options are sentences
+  rather than words — "Anyone with the code joins straight away" against "Admin
+  approves each request".
+
+  These were a .seg turned vertical, which does not survive the rotation: stacked
+  inside one grey track with no separation, the options read as three lines of grey
+  prose, and the selected one as a highlighted line of prose. Nothing said "pick
+  one", and nothing said any of them was tappable. So each option is its own row
+  with its own edge, and carries a radio — the one mark that means exactly
+  "one of these, and this is the one".
+
+  Rows, not a track: the radio and the border are doing the work the track does for
+  .seg, and wrapping them in one as well made a box inside a box inside a card.
+*/
+.optlist {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 14rpx;
+  border: 2rpx solid #ededf2;
+  background: #f8f8fb;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+.opt-radio {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #c3c3cd;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+/* the dot is always in the tree and scaled away, so selecting grows it in place
+   rather than shifting the row */
+.opt-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #5457d6;
+  transform: scale(0);
+  transition: transform 0.15s ease;
+}
+.opt-label {
+  flex: 1;
+  font-size: 26rpx;
+  color: #55555f;
+  line-height: 1.4;
+}
+.opt.is-active {
+  border-color: #5457d6;
+  background: #eeeefc;
+}
+.opt.is-active .opt-radio {
+  border-color: #5457d6;
+}
+.opt.is-active .opt-dot {
+  transform: scale(1);
+}
+.opt.is-active .opt-label {
+  color: #16161d;
+  font-weight: 600;
+}
+/* same reasoning as .seg-item.is-disabled: shown, legible, explains itself on tap */
+.opt.is-disabled .opt-label {
+  color: #a8a8b3;
+}
+.opt.is-disabled .opt-radio {
+  border-color: #dcdce4;
+  background: #f4f4f7;
+}
+
+/*
+  Page tabs — switching between whole panels of a page, not picking a value.
+
+  Same recessed-track idea as .seg, at the larger size a top-level control wants, and
+  each tab can carry a count. Lives here because both the games page and a club's
+  panels need it; the games page adds only the fixed positioning (.segbar).
+*/
+.segtrack {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 5rpx;
+  border-radius: 18rpx;
+  background: #e6e6ee;
+}
+.segtab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  flex: 1;
+  height: 66rpx;
+  border-radius: 14rpx;
+  background: transparent;
+  transition: background-color 0.18s ease;
+}
+/* lifted out of the track — the shadow is what makes it read as on top of it */
+.segtab.is-active {
+  background: #ffffff;
+  box-shadow: 0 2rpx 6rpx rgba(22, 22, 29, 0.1);
+}
+/* A tab is a fixed-height box, so a label that wraps breaks the bar rather than the
+   label. Keep tab wording to a word or two and this never comes up. */
+.segtab-label {
+  font-size: 27rpx;
+  color: #55555f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.segtab.is-active .segtab-label {
+  color: #16161d;
+  font-weight: 600;
+}
+/* count sits inside its tab, so it can't be read as belonging to the next one */
+.segtab-count {
+  min-width: 32rpx;
+  padding: 0 8rpx;
+  border-radius: 16rpx;
+  background: rgba(22, 22, 29, 0.08);
+  color: #55555f;
+  font-size: 21rpx;
+  line-height: 32rpx;
+  text-align: center;
+}
+.segtab.is-active .segtab-count {
+  background: #eeeefc;
+  color: #5457d6;
+  font-weight: 600;
+}
+/* Something waiting on you, rather than a tally of what's there. Stays red on the
+   selected tab too: the point is that it is still outstanding after you looked. */
+.segtab-count.is-alert,
+.segtab.is-active .segtab-count.is-alert {
+  background: #d64545;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 /* session card (templates/session-card.wxml) ------------------------------ */
@@ -877,6 +1042,41 @@ page {
 .btn.is-disabled {
   background: #f0f0f5;
   color: #c3c3cd;
+}
+
+/*
+  A row-scale button: the action belonging to one member, venue, or share, sitting at
+  the end of that row rather than at the bottom of the screen.
+
+  Here because the club, the bill and the manage screen each carried their own copy,
+  which is how the three drifted apart by a couple of rpx and how the ghost variant
+  came to be fixed on one screen and not the others.
+*/
+.mini-btn {
+  flex: 0 0 auto;
+  padding: 0 22rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 10rpx;
+  background: #5457d6;
+  color: #ffffff;
+  font-size: 24rpx;
+  /* a <view> outside a flex row is block-level and stretches; centring the label is
+     what stopped one of these reading as a heading with a grey band behind it */
+  text-align: center;
+  box-sizing: border-box;
+}
+/*
+  Outlined, not filled. A ghost mini-button used to be #f0f0f5 with ink-2 text — which
+  is .tag exactly, down to the corner radius — so "New code" and "Set primary" were
+  indistinguishable from the inert role and status labels sitting on the same rows.
+  The border is what separates a thing you press from a thing you read.
+*/
+.mini-btn.ghost {
+  background: #ffffff;
+  border: 2rpx solid #d8d8e2;
+  color: #55555f;
+  line-height: 52rpx;
 }
 
 

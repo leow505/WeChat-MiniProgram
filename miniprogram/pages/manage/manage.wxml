@@ -8,19 +8,15 @@
 
   <!--
     === courts ========================================================
-    Writing the labels down *is* the booking, so there is no separate status to keep
-    in step: a session with courts named is booked, one without is not. The segmented
-    control that used to sit here was a second source of truth, and the one an
-    organizer forgot — leaving "not booked" on screen above two named courts.
+    How many, and which. Nothing else: writing the labels down *is* the booking, so
+    there is no separate status to keep in step, and the money moved out — what was
+    paid belongs on the cost split page, which is where it is published from.
+
+    Count first, because a session has a number of courts long before it has their
+    names, and because the player count follows from it.
   -->
   <view class="card">
     <view class="section-title">{{t.courts}}</view>
-
-    <view class="field">
-      <text class="field-label">{{t.courtLabelsField}}</text>
-      <input class="field-input" placeholder="3号场, 5号场" value="{{courtText}}" bindinput="onCourtText" />
-    </view>
-    <view class="field-hint">{{t.courtLabelsHint}}</view>
 
     <view class="field">
       <text class="field-label">{{t.courtCount}}</text>
@@ -31,15 +27,11 @@
       </view>
     </view>
 
-    <!-- the total is entered here because this is when the organizer has the receipt;
-         publishing the split is a separate act after play. §9.1 -->
     <view class="field">
-      <text class="field-label">{{t.totalPaid}}</text>
-      <text class="unit">{{currency}}</text>
-      <input class="field-input" type="digit" placeholder="96.00" value="{{totalCost}}" bindinput="onTotalCost" />
+      <text class="field-label">{{t.courtLabelsField}}</text>
+      <input class="field-input" placeholder="3号场, 5号场" value="{{courtText}}" bindinput="onCourtText" />
     </view>
-    <view wx:if="{{perPersonText}}" class="derived-cost">{{perPersonText}}</view>
-    <view class="field-hint">{{t.totalPaidHint}}</view>
+    <view class="field-hint">{{t.courtLabelsHint}}</view>
 
     <view class="btn" bindtap="saveCourts">{{t.save}}</view>
   </view>

@@ -110,7 +110,26 @@ function decorate(ev, t) {
     position_text: ev.my_waitlist_position
       ? i18n.t('yourPosition', { n: ev.my_waitlist_position })
       : '',
+    /**
+     * Courts, as two lines: how many, then which. §3.5
+     *
+     * The count is public — it follows from the format and the player count, and a
+     * player left with only labels had to work backwards from the slots to guess how
+     * many courts there would be. The labels themselves are for whoever holds a seat,
+     * so the second line says why there is nothing there yet: not booked, or not
+     * yours to see.
+     */
+    courts_value: ev.court_count
+      ? i18n.t('courtsCount', { n: ev.court_count })
+      : (ev.court_assignments || []).length
+        ? i18n.t('courtsCount', { n: ev.court_assignments.length })
+        : '',
     courts_line: (ev.court_assignments || []).map((c) => c.label).join(' · '),
+    courts_note: !ev.courts_visible
+      ? t.courtsHidden
+      : (ev.court_assignments || []).length
+        ? ''
+        : t.courtsTbd,
     detailRows,
     roster: withPeople(ev.roster),
     waitlist: withPeople(ev.waitlist),

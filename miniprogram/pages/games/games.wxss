@@ -17,62 +17,15 @@
 }
 
 /*
-  A recessed track holding both halves.
-
-  The first version gave the selected half a white pill and left the other as bare
-  text on the page background — so the unselected side read as a stray label rather
-  than the other half of a control, and nothing indicated it could be tapped. The
-  track is the affordance: darker than the page, both halves inside it, one of them
-  lifted out in white.
+  .segtrack / .segtab / .segtab-label / .segtab-count live in app.wxss. They started
+  here, solving exactly this: the first version gave the selected half a white pill
+  and left the other as bare text on the page background, so the unselected side read
+  as a stray label rather than the other half of a control, and nothing indicated it
+  could be tapped. The track is the affordance — darker than the page, both halves
+  inside it, one of them lifted out in white. A club's panels needed the same thing,
+  so the pattern moved and only the fixed positioning above stayed here.
 */
-.segtrack {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  padding: 5rpx;
-  border-radius: 18rpx;
-  background: #e6e6ee;
-}
-.segtab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  flex: 1;
-  height: 66rpx;
-  border-radius: 14rpx;
-  background: transparent;
-  transition: background-color 0.18s ease;
-}
-/* lifted out of the track — the shadow is what makes it read as on top of it */
-.segtab.is-active {
-  background: #ffffff;
-  box-shadow: 0 2rpx 6rpx rgba(22, 22, 29, 0.1);
-}
-.segtab-label {
-  font-size: 27rpx;
-  color: #55555f;
-}
-.segtab.is-active .segtab-label {
-  color: #16161d;
-  font-weight: 600;
-}
-/* count sits inside its half, so it can't be read as belonging to the other one */
-.segtab-count {
-  min-width: 32rpx;
-  padding: 0 8rpx;
-  border-radius: 16rpx;
-  background: rgba(22, 22, 29, 0.08);
-  color: #55555f;
-  font-size: 21rpx;
-  line-height: 32rpx;
-  text-align: center;
-}
-.segtab.is-active .segtab-count {
-  background: #eeeefc;
-  color: #5457d6;
-  font-weight: 600;
-}
+
 /* clears the fixed bar above */
 .page-tabbed {
   padding-top: 116rpx;

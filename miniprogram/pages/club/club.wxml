@@ -22,13 +22,28 @@
   <!-- prompt for a membership name where the club asks for one. §3.8 -->
   <view wx:if="{{d.is_member && d.needs_membership}}" class="notice">{{t.membershipWhy}}</view>
 
-  <!-- tabs -------------------------------------------------------------- -->
-  <view class="seg">
-    <view class="seg-item {{tab === 'games' ? 'is-active' : ''}}" data-tab="games" bindtap="switchTab">{{t.clubUpcoming}}</view>
-    <view class="seg-item {{tab === 'members' ? 'is-active' : ''}}" data-tab="members" bindtap="switchTab">
-      {{t.membersTitle}}<text wx:if="{{d.pending_count > 0}}" class="badge">{{d.pending_count}}</text>
+  <!--
+    tabs ---------------------------------------------------------------
+
+    The same control the games page uses, for the same reason: these switch whole
+    panels, and as bare .seg-item text on a track four hundredths of a step from the
+    page background, nothing said they were tabs at all. Counts sit inside their own
+    tab — members as a tally, anything pending in red, because that one is waiting
+    on you.
+  -->
+  <view class="segtrack">
+    <view class="segtab {{tab === 'games' ? 'is-active' : ''}}" data-tab="games" bindtap="switchTab">
+      <text class="segtab-label">{{t.clubUpcoming}}</text>
+      <text wx:if="{{d.upcoming.length > 0}}" class="segtab-count">{{d.upcoming.length}}</text>
     </view>
-    <view class="seg-item {{tab === 'more' ? 'is-active' : ''}}" data-tab="more" bindtap="switchTab">{{t.clubSettings}}</view>
+    <view class="segtab {{tab === 'members' ? 'is-active' : ''}}" data-tab="members" bindtap="switchTab">
+      <text class="segtab-label">{{t.membersTitle}}</text>
+      <text wx:if="{{d.pending_count > 0}}" class="segtab-count is-alert">{{d.pending_count}}</text>
+      <text wx:elif="{{d.members.length > 0}}" class="segtab-count">{{d.members.length}}</text>
+    </view>
+    <view class="segtab {{tab === 'more' ? 'is-active' : ''}}" data-tab="more" bindtap="switchTab">
+      <text class="segtab-label">{{t.clubSettings}}</text>
+    </view>
   </view>
 
   <!-- === games ======================================================== -->
@@ -157,17 +172,27 @@
       <view class="card">
         <view class="section-title">{{t.joinTitle}}</view>
 
+        <!--
+          These two are .optlist rather than a vertical .seg. Their options are
+          sentences — "Anyone with the code joins straight away" — and stacked inside
+          one grey track they read as lines of prose, with the chosen one merely
+          highlighted. A radio per row says both "pick exactly one" and "this is
+          the one".
+        -->
         <view class="setting">
           <text class="setting-label">{{t.joinPolicy}}</text>
           <text class="setting-note">{{t.joinPolicyNote}}</text>
-          <view class="seg seg-vertical">
+          <view class="optlist">
             <view
               wx:for="{{jpOptions}}"
               wx:key="value"
-              class="seg-item {{d.club.join_policy === item.value ? 'is-active' : ''}}"
+              class="opt {{d.club.join_policy === item.value ? 'is-active' : ''}}"
               data-value="{{item.value}}"
               bindtap="setJoinPolicy"
-            >{{item.label}}</view>
+            >
+              <view class="opt-radio"><view class="opt-dot"></view></view>
+              <text class="opt-label">{{item.label}}</text>
+            </view>
           </view>
         </view>
 
@@ -176,26 +201,40 @@
           <!-- A club can only ask for a card its primary venue issues, so with no
                venue set the two demanding options would make it unjoinable. -->
           <text class="setting-note">{{mpLocked ? t.membershipNeedsVenue : t.membershipWhy}}</text>
-          <view class="seg seg-vertical">
+          <view class="optlist">
             <view
               wx:for="{{mpOptions}}"
               wx:key="value"
-              class="seg-item {{d.club.membership_policy === item.value ? 'is-active' : ''}} {{mpLocked && item.value !== 'NOT_REQUIRED' ? 'is-disabled' : ''}}"
+              class="opt {{d.club.membership_policy === item.value ? 'is-active' : ''}} {{mpLocked && item.value !== 'NOT_REQUIRED' ? 'is-disabled' : ''}}"
               data-value="{{item.value}}"
               bindtap="setMembershipPolicy"
-            >{{item.label}}</view>
+            >
+              <view class="opt-radio"><view class="opt-dot"></view></view>
+              <text class="opt-label">{{item.label}}</text>
+            </view>
           </view>
         </view>
 
-        <!-- the code is how anyone finds this club at all, so it's always shown
-             to admins rather than being tied to one policy. §3.10 -->
+        <!--
+          The code is how anyone finds this club at all, so it's always shown to
+          admins rather than being tied to one policy. §3.10
+
+          The code used to sit at the end of the label row with a tap handler and
+          nothing to say it had one, and "New code" rendered as a full-width grey
+          bar with left-aligned text — a block-level .mini-btn — which read as a
+          heading. Now the code is a block you press to copy, saying so, with the
+          rotate action beside it as an outlined button.
+        -->
         <view class="setting">
-          <view class="setting-head">
-            <text class="setting-label">{{t.inviteCode}}</text>
-            <text class="code" bindtap="copyCode">{{d.club.invite_code}}</text>
-          </view>
+          <text class="setting-label">{{t.inviteCode}}</text>
           <text class="setting-note">{{t.inviteCodeWhy}}</text>
-          <view class="mini-btn ghost" bindtap="rotateCode">{{t.rotateCode}}</view>
+          <view class="code-row">
+            <view class="code-block" bindtap="copyCode">
+              <text class="code">{{d.club.invite_code}}</text>
+              <text class="code-copy">{{t.tapToCopy}}</text>
+            </view>
+            <view class="mini-btn ghost" bindtap="rotateCode">{{t.rotateCode}}</view>
+          </view>
         </view>
       </view>
 

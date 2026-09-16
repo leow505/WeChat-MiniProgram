@@ -19,19 +19,19 @@
   align-items: center;
   gap: 10rpx;
 }
+/*
+  .mini-btn lives in app.wxss — this page, the club and the manage screen each had
+  their own near-identical copy of it.
+
+  The size is the one thing this page keeps, and the reason is measurable: a share row
+  carries a name, a status tag, an amount and two buttons, which makes it the most
+  crowded row in the app. At the shared size the two buttons take 24rpx more, all of it
+  out of the name — 117rpx of room instead of 141rpx, so "Priya Raman" renders as
+  "Priy…". Whose share it is matters more here than button heft.
+*/
 .mini-btn {
-  flex: 0 0 auto;
   padding: 0 20rpx;
-  height: 56rpx;
-  line-height: 56rpx;
-  border-radius: 10rpx;
-  background: #5457d6;
-  color: #ffffff;
   font-size: 22rpx;
-}
-.mini-btn.ghost {
-  background: #f0f0f5;
-  color: #55555f;
 }
 
 /* The .tag-bill-* and .tag-share-* variants live in app.wxss with the rest of the

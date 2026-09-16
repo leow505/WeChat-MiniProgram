@@ -13,17 +13,10 @@
 .small {
   font-size: 21rpx;
 }
-.badge {
-  display: inline-block;
-  min-width: 32rpx;
-  margin-left: 8rpx;
-  padding: 0 8rpx;
-  border-radius: 16rpx;
-  background: #d64545;
-  color: #ffffff;
-  font-size: 21rpx;
-  line-height: 32rpx;
-  text-align: center;
+/* the tabs are .segtrack / .segtab from app.wxss; the pending count they used to
+   carry as .badge is .segtab-count.is-alert, so it sits inside its own tab */
+.segtrack {
+  margin-bottom: 24rpx;
 }
 .member-row,
 .venue-row {
@@ -45,28 +38,36 @@
 .member-name {
   font-size: 27rpx;
 }
-.mini-btn {
-  flex: 0 0 auto;
-  padding: 0 22rpx;
-  height: 56rpx;
-  line-height: 56rpx;
-  border-radius: 10rpx;
-  background: #5457d6;
-  color: #ffffff;
-  font-size: 24rpx;
+/* .mini-btn lives in app.wxss — this page, the bill and the manage screen each had
+   their own near-identical copy of it. */
+
+/* The code is the one thing on this card somebody came here to take away, so it gets
+   a block of its own that looks pressable, rather than being the right-hand end of a
+   label row with a silent tap handler on it. */
+.code-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
-.mini-btn.ghost {
-  background: #f0f0f5;
-  color: #55555f;
-}
-.seg-vertical {
-  flex-direction: column;
-  gap: 4rpx;
+.code-block {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 14rpx 24rpx;
+  border-radius: 14rpx;
+  background: #eeeefc;
 }
 .code {
   font-size: 34rpx;
   font-weight: 600;
   letter-spacing: 6rpx;
+  color: #5457d6;
+}
+.code-copy {
+  flex: 0 0 auto;
+  font-size: 21rpx;
   color: #5457d6;
 }
 .name-line {

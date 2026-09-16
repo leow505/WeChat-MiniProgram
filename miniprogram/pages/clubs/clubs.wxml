@@ -52,15 +52,20 @@
         <text class="field-label">{{t.clubDesc}}</text>
         <input class="field-input" placeholder="{{t.optional}}" value="{{form.description}}" data-k="description" bindinput="onFormInput" />
       </view>
+      <!-- same control as the club's own settings: sentence-length options, so an
+           .optlist with a radio each rather than a vertical .seg -->
       <view class="section-title">{{t.joinPolicy}}</view>
-      <view class="seg seg-vertical">
+      <view class="optlist">
         <view
           wx:for="{{policyOptions}}"
           wx:key="value"
-          class="seg-item {{form.join_policy === item.value ? 'is-active' : ''}}"
+          class="opt {{form.join_policy === item.value ? 'is-active' : ''}}"
           data-value="{{item.value}}"
           bindtap="onPolicy"
-        >{{item.label}}</view>
+        >
+          <view class="opt-radio"><view class="opt-dot"></view></view>
+          <text class="opt-label">{{item.label}}</text>
+        </view>
       </view>
       <button class="btn" bindtap="submitCreate">{{t.createClub}}</button>
     </view>

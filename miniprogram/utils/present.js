@@ -45,6 +45,9 @@ function deadlineText(ev, t) {
 
 function eventCard(ev, t) {
   const full = rules.isRosterFull(ev)
+  // Which courts this viewer may see, if any: the block below and the chip beside it
+  // both depend on the answer. §3.5
+  const courtsText = rules.courtLabelsFor(ev, ev.my_state, false).join(' · ')
   const left = ev.total_seats_left
   const balanced = ev.roster_mode === 'GENDER_BALANCED'
   const d = fmt.dateParts(ev.start_local)
@@ -117,14 +120,25 @@ function eventCard(ev, t) {
      * gate the detail page uses — a waitlisted player has nowhere to go yet, and a
      * stranger scrolling a club's list has no business knowing the court.
      */
-    courts_text: (function () {
-      const labels = rules.courtLabelsFor(ev, ev.my_state, false)
-      return labels.length ? labels.join(' · ') : ''
-    })(),
+    courts_text: courtsText,
     // A template only sees the data passed to it, so the label travels with the value.
     courts_label: t.courts,
     chips: [
       { key: 'fmt', label: t['fmt' + ev.format_template] || '' },
+      /**
+       * How many courts, which is public: it follows from the format and the player
+       * count, and without it a player had to work backwards from the slots to guess.
+       *
+       * Dropped when the courts themselves are on the card, where the block above
+       * already answers it — "Court 3 · Court 5" and "2 courts" in the same card is
+       * the same fact twice. The detail page shows both, since an organizer can name
+       * fewer courts than they booked and that gap is worth seeing.
+       */
+      {
+        key: 'courts',
+        label:
+          ev.court_count && !courtsText ? i18n.t('courtsCount', { n: ev.court_count }) : '',
+      },
       {
         key: 'lv',
         label: ev.level_hint && ev.level_hint !== 'ANY' ? t['lv' + ev.level_hint] : '',

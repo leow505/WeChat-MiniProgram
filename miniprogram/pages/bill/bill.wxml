@@ -86,6 +86,9 @@
           <text class="unit">{{v.currency_code}}</text>
           <input class="field-input" type="digit" placeholder="96.00" value="{{totalCost}}" bindinput="onTotalCost" />
         </view>
+        <!-- The total is entered here and nowhere else now: the manage screen records
+             what was booked, this page is where money is dealt with. §9.1 -->
+        <view class="field-hint">{{t.totalPaidHint}}</view>
 
         <view wx:if="{{v.preview.payer_count}}" class="split-box">
           <text class="split-main">{{v.per_share_text}}</text>

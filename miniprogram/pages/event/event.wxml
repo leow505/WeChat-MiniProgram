@@ -38,12 +38,14 @@
     <text class="chev">›</text>
   </view>
 
-  <!-- courts: one line, not a whole titled card -->
+  <!-- courts: how many, and which — one strip, not a whole titled card -->
   <view class="strip">
     <text class="k">{{t.courts}}</text>
-    <text wx:if="{{ev.courts_visible && ev.courts_line}}" class="v court-v">{{ev.courts_line}}</text>
-    <text wx:elif="{{!ev.courts_visible}}" class="v dim">{{t.courtsHidden}}</text>
-    <text wx:else class="v dim">{{t.courtsPending}}</text>
+    <view class="v court-cell">
+      <text class="court-v">{{ev.courts_visible && ev.courts_line ? ev.courts_line : ev.courts_value}}</text>
+      <text wx:if="{{ev.courts_visible && ev.courts_line && ev.courts_value}}" class="court-note">{{ev.courts_value}}</text>
+      <text wx:elif="{{ev.courts_note}}" class="court-note">{{ev.courts_note}}</text>
+    </view>
   </view>
 
   <view wx:if="{{ev.club_name}}" class="strip" bindtap="openClub">

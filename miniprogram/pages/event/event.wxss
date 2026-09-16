@@ -11,9 +11,20 @@
 .cap-count.is-long {
   font-size: 33rpx;
 }
+/* Two lines in one strip: the courts, then whichever caveat applies. A column so the
+   note sits under the value rather than competing with it for the row. */
+.court-cell {
+  display: flex;
+  flex-direction: column;
+}
 .court-v {
   font-weight: 600;
   color: #5457d6;
+}
+.court-note {
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #8a8a96;
 }
 .divider {
   height: 1rpx;
