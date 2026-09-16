@@ -118,11 +118,11 @@ function eventCard(ev, t) {
      * stranger scrolling a club's list has no business knowing the court.
      */
     courts_text: (function () {
-      // No "Courts" prefix: the tinted pill says what it is, and "Courts Court 3"
-      // reads as a stutter in English.
       const labels = rules.courtLabelsFor(ev, ev.my_state, false)
       return labels.length ? labels.join(' · ') : ''
     })(),
+    // A template only sees the data passed to it, so the label travels with the value.
+    courts_label: t.courts,
     chips: [
       { key: 'fmt', label: t['fmt' + ev.format_template] || '' },
       {

@@ -523,21 +523,42 @@ page {
   font-size: 23rpx;
   color: #55555f;
 }
-/* The court you are on, under when and where, because it answers the same question
-   one step further: which door. Tinted like the "已报名" badge rather than given
-   another grey, since it only ever appears on a session you hold a seat in. */
-.scard-court {
-  display: inline-block;
+/*
+  The court, directly under the capacity block and shaped like it.
+
+  It started as a small tinted pill on the venue line and was missed unless looked
+  for, which defeats the point: for somebody already holding a seat this is the one
+  fact on the card they came back for. Same inset shape as .capbox, in accent-soft
+  rather than surface-2, so the two read as a pair — the seats question and then the
+  where question — without either being mistaken for prose.
+*/
+.courtbox {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
   margin-top: 10rpx;
-  padding: 2rpx 14rpx;
-  border-radius: 8rpx;
+  padding: 12rpx 18rpx;
+  border-radius: 12rpx;
   background: #eeeefc;
-  color: #5457d6;
-  font-size: 21rpx;
 }
-.scard.is-unavailable .scard-court {
+.courtbox-k {
+  flex: 0 0 auto;
+  font-size: 21rpx;
+  letter-spacing: 1rpx;
+  color: #55555f;
+}
+.courtbox-v {
+  flex: 1;
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #4346c4;
+}
+/* a dimmed card keeps its hierarchy, compressed into greys */
+.scard.is-unavailable .courtbox {
   background: #f4f4f7;
-  color: #a8a8b3;
+}
+.scard.is-unavailable .courtbox-v {
+  color: #8a8a96;
 }
 
 /*

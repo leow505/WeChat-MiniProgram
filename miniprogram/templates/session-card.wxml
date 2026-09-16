@@ -42,8 +42,6 @@
           <text class="tag tag-{{badge_class}}">{{badge_text}}</text>
         </view>
         <text class="scard-when">{{when_where}}</text>
-        <!-- your court, once there is one: the last thing you need before setting off -->
-        <text wx:if="{{courts_text}}" class="scard-court">{{courts_text}}</text>
       </view>
     </view>
 
@@ -54,6 +52,17 @@
         <view class="meter-fill {{is_full ? 'is-full' : ''}}" style="width: {{meter_pct}}%"></view>
       </view>
       <text class="cap-left">{{seats_left_text}}</text>
+    </view>
+
+    <!--
+      Which court, for a session you hold a seat in. Given the same block shape as the
+      capacity reading directly above it, because it answers the next question in the
+      same breath — "can I get in" then "where do I go" — and because a tinted block is
+      read at a glance where a fifth line of small text is skipped.
+    -->
+    <view wx:if="{{courts_text}}" class="courtbox">
+      <text class="courtbox-k">{{courts_label}}</text>
+      <text class="courtbox-v">{{courts_text}}</text>
     </view>
 
     <!-- format, level, cost as separate tokens rather than one run-on line -->
