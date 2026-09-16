@@ -97,19 +97,34 @@
           <text class="demo-code-v">{{item.name}} · {{item.policy_label}}</text>
         </view>
       </view>
-      <!-- Revealed once the code turns out to belong to a club that plays on a venue
-           card: the field, and the sentence explaining it, side by side. §3.8 -->
-      <view wx:if="{{askingMembership}}" class="field">
-        <text class="field-label">{{t.membershipName}}</text>
-        <input
-          class="field-input"
-          placeholder="{{t.membershipNamePlaceholder}}"
-          value="{{joinName}}"
-          bindinput="onJoinName"
-        />
-      </view>
-      <view wx:if="{{askingMembership}}" class="field-hint">{{t.membershipAskWhy}}</view>
       <button class="btn" bindtap="submitCode">{{t.joinClub}}</button>
+    </view>
+  </view>
+
+  <!--
+    Asked when the code turns out to belong to a club that plays on a venue card. §3.8
+
+    Its own dialog rather than wx.showModal, whose `content` becomes the input's value
+    once `editable` is set — the explanation ended up typed into the field. catchtap on
+    the dialog stops a tap inside it closing the thing it is inside.
+  -->
+  <view wx:if="{{askingMembership}}" class="dialog-mask" bindtap="cancelMembership">
+    <view class="dialog" catchtap="noop">
+      <text class="dialog-title">{{t.membershipName}}</text>
+      <text class="dialog-body">{{t.membershipAskWhy}}</text>
+      <input
+        class="dialog-input"
+        placeholder="{{t.membershipNamePlaceholder}}"
+        value="{{joinName}}"
+        focus="{{askingMembership}}"
+        confirm-type="done"
+        bindinput="onJoinName"
+        bindconfirm="submitCode"
+      />
+      <view class="dialog-actions">
+        <view class="dialog-btn" bindtap="cancelMembership">{{t.cancel}}</view>
+        <view class="dialog-btn is-primary" bindtap="submitCode">{{t.joinClub}}</view>
+      </view>
     </view>
   </view>
 

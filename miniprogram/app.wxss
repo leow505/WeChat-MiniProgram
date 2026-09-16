@@ -1109,3 +1109,72 @@ page {
   flex: 0 0 auto;
   font-weight: 600;
 }
+
+/*
+  Dialog — a prompt that needs to say something *and* take an answer.
+
+  wx.showModal cannot: setting `editable` turns its `content` into the input's value, so
+  an explanation passed there is typed into the field it was explaining. Putting the
+  explanation in the page instead worked but read as a form appearing under an unrelated
+  input, so this is the middle ground — a real dialog, with the note above the field.
+
+  Centred rather than a bottom sheet, because it is a question to answer before going
+  on, not a menu of choices.
+*/
+.dialog-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  background: rgba(22, 22, 29, 0.45);
+}
+.dialog {
+  width: 100%;
+  max-width: 600rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 40rpx 36rpx 0;
+  box-shadow: 0 8rpx 40rpx rgba(22, 22, 29, 0.2);
+}
+.dialog-title {
+  display: block;
+  font-size: 33rpx;
+  font-weight: 600;
+}
+/* The reason for the field, above the field. */
+.dialog-body {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 23rpx;
+  line-height: 1.55;
+  color: #55555f;
+}
+.dialog-input {
+  margin-top: 24rpx;
+  padding: 20rpx 22rpx;
+  border-radius: 12rpx;
+  background: #f8f8fb;
+  font-size: 27rpx;
+}
+/* Buttons as a row divided by hairlines, the convention the platform's own dialog uses,
+   so confirm sits where a thumb already expects it. */
+.dialog-actions {
+  display: flex;
+  margin: 32rpx -36rpx 0;
+  border-top: 1rpx solid #ededf2;
+}
+.dialog-btn {
+  flex: 1;
+  padding: 28rpx 0;
+  text-align: center;
+  font-size: 29rpx;
+  color: #55555f;
+}
+.dialog-btn.is-primary {
+  color: #5457d6;
+  font-weight: 600;
+  border-left: 1rpx solid #ededf2;
+}

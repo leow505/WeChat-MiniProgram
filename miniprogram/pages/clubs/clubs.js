@@ -145,6 +145,13 @@ Page({
     this.setData({ joinName: e.detail.value })
   },
 
+  cancelMembership() {
+    this.setData({ askingMembership: false, joinName: '' })
+  },
+
+  /** The mask closes the dialog; a tap inside it must not. */
+  noop() {},
+
   /**
    * An invite code identifies the club on its own, so it's matched client-side
    * against nothing — the server resolves it. We only have the code, so we ask the
@@ -163,11 +170,17 @@ Page({
       wx.showToast({ title: t.vInviteCode, icon: 'none' })
       return
     }
-    this.tryCode(code, String(this.data.joinName || '').trim()).catch((err) => {
+    const name = String(this.data.joinName || '').trim()
+    // Asked already and still blank: say what is missing rather than letting the server
+    // refuse again in silence.
+    if (this.data.askingMembership && !name) {
+      wx.showToast({ title: t.vMembershipName, icon: 'none' })
+      return
+    }
+
+    this.tryCode(code, name).catch((err) => {
       if (err && err.code === 'MEMBERSHIP_REQUIRED') {
         this.setData({ askingMembership: true })
-        // Already asked, still blank: say so rather than refusing again in silence.
-        if (this.data.askingMembership) wx.showToast({ title: t.vMembershipName, icon: 'none' })
         return
       }
       wx.showToast({ title: i18n.errText(err), icon: 'none' })
